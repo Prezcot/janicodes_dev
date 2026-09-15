@@ -1,36 +1,51 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# JANI//OS — Workbench
 
-## Getting Started
+A personal portfolio that starts with an OS-style installer and opens onto an olive-and-parchment desktop. Built with Next.js 16, React 19 and TypeScript, based on the approved Workbench study in `mockups/02-workbench.html`.
 
-First, run the development server:
+## Run locally
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+Requires Node.js 20.9+ and the pinned pnpm version.
+
+```sh
+pnpm install --frozen-lockfile
+pnpm dev --hostname 127.0.0.1
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open http://127.0.0.1:3000. Use Install to save a workspace, or Skip for temporary exploration. The package-manager pin was updated from the broken pnpm 11.13.0 release to 12.4.1; application dependencies remain locked.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Included
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+- Four-step installer with wallpaper selection, optional name and 10–100 MB saved-workspace budget.
+- Desktop text files, sample projects, and a Home/Projects file manager.
+- Resizable windows with direct dragging, shadow lift, close, minimize, restore and maximize controls.
+- Motion transitions and Lucide icons; desktop shortcuts open on double-click.
+- Desktop context menus, folder renaming and new text files with automatic saving.
+- Editable notes with explicit Save, plus text-file downloads.
+- Browser-style search launcher that opens DuckDuckGo in a real tab.
+- IndexedDB persistence for installed settings, notes, folder names and created text files; returning visitors resume their desktop.
+- Temporary live sessions, storage failure feedback and mobile layouts.
 
-## Learn More
+The slider caps the UTF-8 serialized workspace data saved by this app. It does not reserve disk space or set the browser's quota, and does not include downloaded application assets. Storage is used only for actual workspace data. Browser storage can be cleared or evicted. Live sessions do not persist edits. Unsaved notes remain available while switching windows; save them before leaving the desktop.
 
-To learn more about Next.js, take a look at the following resources:
+Portfolio details are currently labeled sample content. Replace the text in `app/workbench/desktop.tsx` with verified resume and project information before publishing. Window positions are session-only. General websites open externally; this is not an embedded Firefox engine.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Structure
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+- `app/page.tsx`: startup, saved/live session state, ordered writes.
+- `app/workbench/installer.tsx`: installation and customization.
+- `app/workbench/desktop.tsx` and `desktop.css`: desktop and applications.
+- `app/workbench/app-window.tsx`: window movement, resizing and animation.
+- `public/studies/window-motion.html`: standalone movement comparison.
+- `app/workbench/storage.ts`: validated IndexedDB reads/writes and byte-budget checks.
+- `app/workbench/types.ts`: shared settings and workspace types.
+- `mockups/`: five standalone design explorations, comparison gallery and original brief.
 
-## Deploy on Vercel
+## Validation
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+```sh
+pnpm typecheck
+pnpm lint
+pnpm build
+```
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Verified in Chromium: installation, settings/note persistence after reload (including empty notes), file navigation, search URL generation, window dragging/minimize/restore/maximize, and 390px layout. Storage validation and multibyte UTF-8 budget rejection were checked with Node's assertions against compiled storage code. Search launch was intercepted during testing; external results were not inspected.
