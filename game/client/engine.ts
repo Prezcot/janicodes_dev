@@ -156,11 +156,15 @@ export function startGame(canvas: HTMLCanvasElement, map: GameMap, conn: MatchCo
     yaw -= e.movementX * BASE_SENSITIVITY * sensitivity;
     pitch = clamp(pitch - e.movementY * BASE_SENSITIVITY * sensitivity, -1.5, 1.5);
   };
+  // Start or continue play from a click: sound may start, and the mouse is locked to the game.
+  // A browser can refuse the lock shortly after Esc. The player then clicks again.
+  const enter = () => {
+    audio.unlock();
+    if (!latest?.ended) (canvas.requestPointerLock() as Promise<void> | undefined)?.catch(() => {});
+  };
   const onMouseDown = (e: MouseEvent) => {
     if (e.button !== 0) return;
-    audio.unlock();
-    if (locked) fire = fireTap = true;
-    else if (!latest?.ended) (canvas.requestPointerLock() as Promise<void> | undefined)?.catch(() => {});
+    if (locked) { audio.unlock(); fire = fireTap = true; } else enter();
   };
   const onMouseUp = (e: MouseEvent) => { if (e.button === 0) fire = false; };
   const onKeyDown = (e: KeyboardEvent) => { if (!locked) return; keys.add(e.code); taps.add(e.code); if (e.code === "Space" || e.code === "Tab") e.preventDefault(); };
@@ -266,6 +270,7 @@ export function startGame(canvas: HTMLCanvasElement, map: GameMap, conn: MatchCo
   raf = requestAnimationFrame(frame);
 
   return {
+    enter,
     setOptions(next: Options) { sensitivity = next.sensitivity; audio.setVolume(next.volume); },
     /** Stop the game and free its resources. */
     stop() {

@@ -29,18 +29,30 @@ const clock = (seconds: number) => `${Math.floor(seconds / 60)}:${String(seconds
 
 type Play = { code: string; name: string; colour: number } | { code: ""; name: string; colour: number };
 
+const loadOptions = (): Options => ({ sensitivity: Number(load("sensitivity")) || 1, volume: load("volume") === "" ? 0.6 : Number(load("volume")) });
+
+/** The two sliders. They are in the lobby and in the menu that Esc opens. Each change is saved in the browser. */
+function Settings({ options, onChange }: { options: Options; onChange: (next: Options) => void }) {
+  const change = (next: Options) => { store("sensitivity", String(next.sensitivity)); store("volume", String(next.volume)); onChange(next); };
+  return <>
+    <label><span>Mouse sensitivity <b>{options.sensitivity.toFixed(1)}</b></span><input type="range" min="0.3" max="3" step="0.1" value={options.sensitivity} onChange={e => change({ ...options, sensitivity: Number(e.target.value) })} /></label>
+    <label>Volume<input type="range" min="0" max="1" step="0.05" value={options.volume} onChange={e => change({ ...options, volume: Number(e.target.value) })} /></label>
+  </>;
+}
+
 export default function Game() {
   const [play, setPlay] = useState<Play | null>(null);
   const [notice, setNotice] = useState("");
+  const [options, setOptions] = useState(loadOptions);
   // Esc frees the mouse. It must not also close the Workbench window.
   return <div className="fps-root" tabIndex={0} onKeyDown={e => { if (e.key === "Escape") e.stopPropagation(); }}>
     {play
-      ? <Arena key={play.code} play={play} onExit={reason => { setNotice(WHY[reason]); setPlay(null); }} />
-      : <Lobby notice={notice} onPlay={next => { setNotice(""); setPlay(next); }} />}
+      ? <Arena key={play.code} play={play} options={options} onOptions={setOptions} onExit={reason => { setNotice(WHY[reason]); setPlay(null); }} />
+      : <Lobby notice={notice} options={options} onOptions={setOptions} onPlay={next => { setNotice(""); setPlay(next); }} />}
   </div>;
 }
 
-function Lobby({ notice, onPlay }: { notice: string; onPlay: (play: Play) => void }) {
+function Lobby({ notice, options, onOptions, onPlay }: { notice: string; options: Options; onOptions: (next: Options) => void; onPlay: (play: Play) => void }) {
   const [name, setName] = useState(() => load("name"));
   const [colour, setColour] = useState(() => Math.min(7, Math.max(0, Number(load("colour")) || 0)));
   const [rooms, setRooms] = useState<RoomInfo[] | null>(null);
@@ -79,6 +91,7 @@ function Lobby({ notice, onPlay }: { notice: string; onPlay: (play: Play) => voi
         {theme.players.map((p, i) => <button key={i} role="radio" aria-checked={colour === i} aria-label={p.name} title={p.name} style={{ background: p.colour }} onClick={() => setColour(i)} />)}
       </div>
     </div>
+    <div className="fps-settings"><Settings options={options} onChange={onOptions} /></div>
     {(notice || error) && <p className="fps-notice" role="alert">{error || notice}</p>}
     {SERVER ? <>
       <div className="fps-rooms">
@@ -107,11 +120,12 @@ function Lobby({ notice, onPlay }: { notice: string; onPlay: (play: Play) => voi
 const START: Hud = { locked: false, alive: true, health: TUNING.maxHealth, ammo: TUNING.magSize, reloading: false, secondsLeft: 0, ended: false, showScores: false, scores: [], aim: "", killedBy: "", feed: [], hits: 0, headHit: false };
 const ranked = (scores: Score[]) => [...scores].sort((a, b) => b.kills - a.kills || a.deaths - b.deaths);
 
-function Arena({ play, onExit }: { play: Play; onExit: (reason: CloseReason) => void }) {
+function Arena({ play, options, onOptions, onExit }: { play: Play; options: Options; onOptions: (next: Options) => void; onExit: (reason: CloseReason) => void }) {
   const canvas = useRef<HTMLCanvasElement>(null);
   const game = useRef<ReturnType<typeof startGame> | null>(null);
   const [hud, setHud] = useState(START);
-  const [options, setOptions] = useState<Options>(() => ({ sensitivity: Number(load("sensitivity")) || 1, volume: load("volume") === "" ? 0.6 : Number(load("volume")) }));
+  // True once the player has clicked into the game. After that, a free mouse opens the game menu.
+  const [played, setPlayed] = useState(false);
   const exit = useRef(onExit);
   useEffect(() => { exit.current = onExit; });
 
@@ -122,18 +136,13 @@ function Arena({ play, onExit }: { play: Play; onExit: (reason: CloseReason) => 
     const connection = play.code
       ? connectRoom({ ...who, url: `${SERVER.replace(/^http/, "ws")}/room/${play.code}/ws`, map: SPLIT_LEVEL, onClosed: reason => exit.current(reason) })
       : connectLocal(SPLIT_LEVEL, who);
-    const started = startGame(canvas.current!, SPLIT_LEVEL, connection, play.colour, options, setHud);
+    const started = startGame(canvas.current!, SPLIT_LEVEL, connection, play.colour, options, next => { setHud(next); if (next.locked) setPlayed(true); });
     game.current = started;
     return () => { started.stop(); connection.close(); game.current = null; };
     // The options at start are enough: later changes go through setOptions.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [play]);
 
-  const change = (next: Options) => {
-    setOptions(next);
-    game.current?.setOptions(next);
-    store("sensitivity", String(next.sensitivity)); store("volume", String(next.volume));
-  };
   const table = (scores: Score[]) => <table className="fps-table">
     <thead><tr><th>Player</th><th>Kills</th><th>Deaths</th></tr></thead>
     <tbody>{ranked(scores).map(s => <tr key={s.id} className={s.left ? "left" : ""}>
@@ -149,7 +158,7 @@ function Arena({ play, onExit }: { play: Play; onExit: (reason: CloseReason) => 
     <div className="fps-feed">{hud.feed.map(f => <div key={f.key}><b>{f.killer}</b> {f.head ? "headshot" : "shot"} <b>{f.target}</b></div>)}</div>
     <div className="fps-stat fps-health"><small>Health</small>{hud.alive ? hud.health : 0}</div>
     <div className="fps-stat fps-ammo"><small>{hud.reloading ? "Reloading" : "Ammo"}</small>{hud.ammo} / {TUNING.magSize}</div>
-    {!hud.alive && !hud.ended && hud.killedBy && <div className="fps-killed">Killed by <b>{hud.killedBy}</b></div>}
+    {hud.locked && !hud.alive && !hud.ended && hud.killedBy && <div className="fps-killed">Killed by <b>{hud.killedBy}</b></div>}
     {hud.showScores && !hud.ended && <div className="fps-panel fps-scores">{table(hud.scores)}</div>}
     {hud.ended && <div className="fps-panel fps-final">
       <h3>Final kill count</h3>
@@ -157,14 +166,15 @@ function Arena({ play, onExit }: { play: Play; onExit: (reason: CloseReason) => 
       {table(hud.scores)}
       <button className="btn primary" onClick={() => onExit("over")}>Back to rooms</button>
     </div>}
-    {!hud.locked && !hud.ended && <div className="fps-overlay">
-      <strong>Click to play</strong>
+    {!hud.locked && !hud.ended && <div className="fps-overlay" onMouseDown={e => { if (e.button === 0 && !(e.target as HTMLElement).closest(".fps-menu")) game.current?.enter(); }}>
+      {!hud.alive && hud.killedBy && <div className="fps-panel fps-death">Killed by <b>{hud.killedBy}</b></div>}
+      <strong>{played ? "Game menu" : "Click to play"}</strong>
       <span>WASD move · Space jump · Left Shift crouch</span>
       <span>Click fire · R reload · Tab scores · Esc menu</span>
       <div className="fps-panel fps-menu">
-        <label><span>Mouse sensitivity <b>{options.sensitivity.toFixed(1)}</b></span><input type="range" min="0.3" max="3" step="0.1" value={options.sensitivity} onChange={e => change({ ...options, sensitivity: Number(e.target.value) })} /></label>
-        <label>Volume<input type="range" min="0" max="1" step="0.05" value={options.volume} onChange={e => change({ ...options, volume: Number(e.target.value) })} /></label>
+        {played && <Settings options={options} onChange={next => { onOptions(next); game.current?.setOptions(next); }} />}
         <div className="fps-actions">
+          {played && <button className="btn primary" onClick={() => game.current?.enter()}>Resume</button>}
           <button className="btn" onClick={() => void canvas.current?.parentElement?.requestFullscreen()}>Full screen</button>
           <button className="btn" onClick={() => onExit("over")}>{play.code ? "Leave room" : "Stop"}</button>
         </div>

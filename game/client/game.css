@@ -16,19 +16,23 @@
 .fps-top { top: 10px; left: 50%; transform: translateX(-50%); padding: 4px 10px; font-size: 13px; }
 .fps-aim { top: calc(50% + 22px); left: 50%; transform: translateX(-50%); padding: 2px 8px; }
 .fps-killed { top: 32%; left: 50%; transform: translateX(-50%); padding: 8px 16px; font-size: 14px; }
-.fps-killed b, .fps-feed b { color: var(--accent-strong); }
+.fps-killed b, .fps-feed b, .fps-death b { color: var(--accent-strong); }
+.fps-death { font-size: 14px; margin-bottom: 8px; }
 .fps-feed { top: 10px; right: 12px; display: grid; gap: 4px; justify-items: end; }
 .fps-feed div { padding: 3px 8px; }
 .fps-stat { bottom: 12px; padding: 6px 12px; font-size: 20px; font-weight: 700; min-width: 86px; }
 .fps-stat small { display: block; font-size: 9px; font-weight: 400; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
 .fps-health { left: 12px; }
 .fps-ammo { right: 12px; text-align: right; }
-.fps-overlay { position: absolute; inset: 0; display: grid; place-content: center; justify-items: center; gap: 6px; text-align: center; pointer-events: none; background: color-mix(in srgb, var(--surface-2) 70%, transparent); }
+/* The menu scrolls inside the game when the game is too short to show all of it. A click outside the menu returns to the game. */
+.fps-overlay { position: absolute; inset: 0; display: grid; place-content: safe center; justify-items: center; gap: 6px; padding: 10px; overflow-y: auto; text-align: center; background: color-mix(in srgb, var(--surface-2) 70%, transparent); }
 .fps-overlay strong { font-size: 22px; color: var(--accent-strong); margin-bottom: 4px; }
 .fps-panel { padding: 12px 14px; }
-.fps-menu { pointer-events: auto; margin-top: 12px; display: grid; gap: 10px; min-width: 250px; text-align: left; }
+.fps-menu { margin-top: 12px; display: grid; gap: 10px; min-width: 250px; text-align: left; }
 .fps-menu label { display: grid; gap: 4px; }
-.fps-menu input[type=range] { accent-color: var(--accent); width: 100%; }
+.fps-root input[type=range] { accent-color: var(--accent); width: 100%; }
+.fps-settings { display: flex; flex-wrap: wrap; gap: 14px 22px; }
+.fps-settings label { display: grid; gap: 4px; width: 250px; }
 .fps-scores, .fps-final { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); min-width: 300px; }
 .fps-final { text-align: center; display: grid; gap: 8px; }
 .fps-final h3 { margin: 0; font-size: 16px; }
