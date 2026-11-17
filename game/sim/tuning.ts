@@ -29,6 +29,7 @@ export const TUNING = {
   idleSeconds: 2 * 60,
   reconnectGrace: 20,
   nameLength: 16,
+  skins: 7, // pistol looks a player can choose from
 };
 
 /** Movement runs in fixed steps of this many seconds, in the browser and on the server. */

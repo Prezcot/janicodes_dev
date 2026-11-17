@@ -1,7 +1,7 @@
 import type { GameEvent, JoinResult, PlayerInput, PrivateState, Snapshot } from "../sim";
 
 export type ClientMessage =
-  | { t: "join"; id: string; name: string; colour: number }
+  | { t: "join"; id: string; name: string; colour: number; skin?: number }
   /** A batch of inputs, one for each fixed step. `seq` numbers the last one. */
   | { t: "in"; seq: number; inputs: PlayerInput[] }
   | { t: "leave" };

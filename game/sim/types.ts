@@ -27,6 +27,8 @@ export type Player = {
   id: string;
   name: string;
   colour: number;
+  /** Which pistol look the player chose. 0 is the first one. */
+  skin: number;
   pos: Vec3; // feet
   vel: Vec3;
   yaw: number;
@@ -73,7 +75,7 @@ export type Match = {
   joins: number;
 };
 
-export type PlayerView = Pick<Player, "id" | "name" | "colour" | "pos" | "vel" | "yaw" | "pitch" | "crouched" | "onGround" | "alive" | "health" | "ammo" | "kills" | "deaths" | "left"> & {
+export type PlayerView = Pick<Player, "id" | "name" | "colour" | "skin" | "pos" | "vel" | "yaw" | "pitch" | "crouched" | "onGround" | "alive" | "health" | "ammo" | "kills" | "deaths" | "left"> & {
   reloading: boolean;
   protected: boolean;
 };
@@ -82,6 +84,6 @@ export type Snapshot = { time: number; endsAt: number; ended: boolean; players: 
 /** What a client needs to repair its own predicted movement. */
 export type PrivateState = Pick<Player, "pos" | "vel" | "onGround" | "jumpHeld" | "crouched" | "alive" | "health" | "ammo">;
 /** What a room saves so a restart keeps the scores and the time left. */
-export type SavedRoom = { endsIn: number | null; players: Pick<Player, "id" | "name" | "colour" | "kills" | "deaths">[] };
+export type SavedRoom = { endsIn: number | null; players: Pick<Player, "id" | "name" | "colour" | "skin" | "kills" | "deaths">[] };
 
 export type JoinResult = { ok: true } | { ok: false; reason: "full" | "ending" | "colour-taken" | "ended" };

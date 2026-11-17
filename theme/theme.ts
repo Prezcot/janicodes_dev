@@ -3,6 +3,19 @@
  * Every colour of the desktop and the game is defined in this file and nowhere else.
  * To change a colour, change its value here. The styles and the 3D game both read it.
  */
+/** One pistol look. With `fromPlayer`, the base and panel colours come from the player's own colour. With `plain`, nothing is drawn on it. */
+export type Skin = { name: string; note: string; base: string; panel: string; line: string; accent: string; pattern?: "hatch" | "grid" | "dots"; patternInk?: string; fromPlayer?: boolean; plain?: boolean };
+/** The pistol looks, in the order the game stores them. The first one is the default. */
+const skins: Skin[] = [
+  { name: "Ink steel", note: "Grey card with drawn panel lines.", base: "#4a686e", panel: "#3a555b", line: "#0f3a44", accent: "#f0704a" },
+  { name: "Hatched steel", note: "Pen hatching, like the crates.", base: "#5d7d83", panel: "#46646a", line: "#0f3a44", accent: "#f0704a", pattern: "hatch", patternInk: "rgba(15,58,68,0.42)" },
+  { name: "Paper cutout", note: "Cream card with ink lines.", base: "#f9f6ea", panel: "#dfe9e2", line: "#0f3a44", accent: "#f0704a" },
+  { name: "Blueprint", note: "Teal with a fine light grid.", base: "#125e6b", panel: "#0e4a55", line: "#d2ebe8", accent: "#ffd9a0", pattern: "grid", patternInk: "rgba(210,235,232,0.3)" },
+  { name: "Sand card", note: "Deck-coloured card with printed dots.", base: "#ecdab2", panel: "#d9c391", line: "#0f3a44", accent: "#a53412", pattern: "dots", patternInk: "rgba(15,58,68,0.24)" },
+  { name: "Player colour", note: "The pistol matches your figure.", base: "", panel: "", line: "#0f3a44", accent: "#f9f6ea", pattern: "hatch", patternInk: "rgba(249,246,234,0.22)", fromPlayer: true },
+  { name: "Flat grey", note: "Plain grey card with no drawing.", base: "#4a686e", panel: "#4a686e", line: "#0f3a44", accent: "#4a686e", plain: true },
+];
+
 export const theme = {
   /** Desktop, windows, and the game's panels. Each entry becomes a CSS variable: `surface2` is `--surface-2`. */
   ui: {
@@ -36,7 +49,6 @@ export const theme = {
     gridLine: "#125e6b", // drawn semi-transparent on floors, walls, and low walls
     crateLine: "rgba(120,40,20,0.7)",
     edge: "#0f3a44", // the outline of every shape
-    metal: "#4a686e", // the pistol
     hole: "#0a2026", // the centre of a bullet hole
     flash: "#f0704a", // the muzzle flash
     light: { sky: "#ffffff", ground: "#e6dcc4", sun: "#fff6e0", hand: "#cbbd9c" },
@@ -52,6 +64,7 @@ export const theme = {
     { name: "Ochre", colour: "#8a6400" },
     { name: "Graphite", colour: "#33363b" },
   ],
+  skins,
 } as const;
 
 /** The `ui` colours as CSS variables, set once on the page's root element. */

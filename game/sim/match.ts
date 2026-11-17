@@ -24,8 +24,9 @@ function pickSpawn(match: Match, p: Player) {
   return best;
 }
 
-const blank = (who: { id: string; name: string; colour: number }, now: number): Player => ({
-  ...who, pos: [0, 0, 0], vel: [0, 0, 0], yaw: 0, pitch: 0, crouched: false, onGround: true, jumpHeld: false, fireHeld: false,
+// A snapshot from an older server and a room saved by one have no skin. They get the first skin.
+const blank = (who: { id: string; name: string; colour: number; skin?: number }, now: number): Player => ({
+  ...who, skin: who.skin ?? 0, pos: [0, 0, 0], vel: [0, 0, 0], yaw: 0, pitch: 0, crouched: false, onGround: true, jumpHeld: false, fireHeld: false,
   alive: true, health: T.maxHealth, ammo: T.magSize, reloadUntil: 0, nextFireAt: 0, lastDamageAt: 0, respawnAt: 0, protectedUntil: 0,
   lastActiveAt: now, lastInput: "", kills: 0, deaths: 0, left: false, leftAt: 0, trail: [],
 });
@@ -46,7 +47,7 @@ export const activeCount = (match: Match) => [...match.players.values()].filter(
  * Add a player, or bring back one who left. A returning player keeps their score.
  * A player who left keeps their slot and colour for the reconnect grace time.
  */
-export function join(match: Match, who: { id: string; name: string; colour: number }): JoinResult {
+export function join(match: Match, who: { id: string; name: string; colour: number; skin?: number }): JoinResult {
   if (match.ended) return { ok: false, reason: "ended" };
   const now = match.time, back = match.players.get(who.id);
   if (back && !back.left) return { ok: true };
@@ -60,7 +61,7 @@ export function join(match: Match, who: { id: string; name: string; colour: numb
   for (let n = 2; others.some((q) => q.name === name); n++) name = `${base} ${n}`;
   if (match.endsAt === Infinity) match.endsAt = now + T.roomSeconds;
   if (back) {
-    Object.assign(back, { name, colour: who.colour, left: false, lastActiveAt: now });
+    Object.assign(back, { name, colour: who.colour, skin: who.skin ?? 0, left: false, lastActiveAt: now });
     spawn(match, back);
     return { ok: true };
   }
@@ -239,7 +240,7 @@ export function mirror(match: Match, snap: Snapshot, selfId: string): void {
     if (v.id === selfId) continue;
     let p = match.players.get(v.id);
     if (!p) { p = blank(v, match.time); match.players.set(v.id, p); }
-    Object.assign(p, { name: v.name, colour: v.colour, pos: [...v.pos], yaw: v.yaw, pitch: v.pitch, crouched: v.crouched, alive: v.alive, left: v.left, health: v.health, protectedUntil: v.protected ? Infinity : 0 });
+    Object.assign(p, { name: v.name, colour: v.colour, skin: v.skin ?? 0, pos: [...v.pos], yaw: v.yaw, pitch: v.pitch, crouched: v.crouched, alive: v.alive, left: v.left, health: v.health, protectedUntil: v.protected ? Infinity : 0 });
   }
   for (const id of match.players.keys()) if (!seen.has(id)) match.players.delete(id);
 }
@@ -247,7 +248,7 @@ export function mirror(match: Match, snap: Snapshot, selfId: string): void {
 export function save(match: Match): SavedRoom {
   return {
     endsIn: match.endsAt === Infinity ? null : match.endsAt - match.time,
-    players: [...match.players.values()].map(({ id, name, colour, kills, deaths }) => ({ id, name, colour, kills, deaths })),
+    players: [...match.players.values()].map(({ id, name, colour, skin, kills, deaths }) => ({ id, name, colour, skin, kills, deaths })),
   };
 }
 
@@ -263,7 +264,7 @@ export function snapshot(match: Match): Snapshot {
   return {
     time: match.time, endsAt: match.endsAt, ended: match.ended,
     players: [...match.players.values()].map((p) => ({
-      id: p.id, name: p.name, colour: p.colour, pos: [...p.pos], vel: [...p.vel], yaw: p.yaw, pitch: p.pitch, crouched: p.crouched, onGround: p.onGround,
+      id: p.id, name: p.name, colour: p.colour, skin: p.skin, pos: [...p.pos], vel: [...p.vel], yaw: p.yaw, pitch: p.pitch, crouched: p.crouched, onGround: p.onGround,
       alive: p.alive, health: p.health, ammo: p.ammo, kills: p.kills, deaths: p.deaths, left: p.left,
       reloading: p.reloadUntil > 0, protected: match.time < p.protectedUntil,
     })),

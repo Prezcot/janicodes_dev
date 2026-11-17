@@ -15,7 +15,7 @@ const turn = (a: number, b: number, k: number) => a + Math.atan2(Math.sin(b - a)
  * Play in a room on the server. The player's own movement is predicted here, with the same
  * simulation the server runs, so it responds at once. Other players are shown slightly in the past.
  */
-export function connectRoom(options: { url: string; map: GameMap; id: string; name: string; colour: number; onClosed(reason: CloseReason): void }): MatchConnection {
+export function connectRoom(options: { url: string; map: GameMap; id: string; name: string; colour: number; skin: number; onClosed(reason: CloseReason): void }): MatchConnection {
   const { url, map, id, onClosed } = options;
   const replica = createMatch(map); // the local copy used for prediction
   let listener: (snapshot: Snapshot, events: GameEvent[]) => void = () => {};
@@ -53,7 +53,7 @@ export function connectRoom(options: { url: string; map: GameMap; id: string; na
 
   const open = () => {
     ws = new WebSocket(url);
-    ws.onopen = () => send({ t: "join", id, name: options.name, colour: options.colour });
+    ws.onopen = () => send({ t: "join", id, name: options.name, colour: options.colour, skin: options.skin });
     ws.onmessage = (e) => onMessage(JSON.parse(e.data as string));
     ws.onclose = () => {
       if (done) return;

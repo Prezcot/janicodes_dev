@@ -51,6 +51,8 @@ The single record of what the game is, what is built, and what is verified. Upda
 - Settings: mouse sensitivity and volume. They are in the lobby, and in the game menu that shows when the mouse is free after play has started. The first screen of a match shows only "Click to play" and the key hints. The match does not pause while the menu is open.
 - Lobby: "Your player" on the left, with a preview of the paper figure in the chosen colour, the name, the colour, and the settings. Rooms and the key hints are on the right. In a narrow window the lobby is one column. The figure sways, and at random times it hops and spins, dances in a crouch, falls flat, or wobbles. A new colour arrives with a hop and a spin. The figure stays still when the system asks for reduced motion.
 - Keyboard in the lobby: the arrow keys change the colour. The game shows a focus ring while the mouse is free. No label in the game is smaller than 12 pixels.
+- Pistol looks: seven looks for the pistol, chosen in the pistol menu that opens from "Change pistol" in the lobby. "Ink steel" is the default. The others are "Hatched steel", "Paper cutout", "Blueprint", "Sand card", "Player colour", and "Flat grey". Every player in a room sees every other player's look. The choice is saved in the browser. The pistol keeps its shape of two boxes: each look is drawn in code onto the faces, so the site loads no image files for it.
+- Esc inside the game window never closes the window. In the pistol menu it closes the menu.
 
 **Hosting and cost**
 - The site stays on Vercel. Multiplayer runs on Cloudflare Durable Objects on the Workers Free plan: one object per room, plus one for the room list.
@@ -65,7 +67,7 @@ The single record of what the game is, what is built, and what is verified. Upda
 - `game/net/`: `MatchConnection`, the seam between the client and wherever the match runs. `local.ts` runs a match in the tab. `remote.ts` plays in a room on the server, with prediction. `protocol.ts` holds the message types.
 - `game/server/room.ts`: one room's logic, with no Cloudflare code, so it is tested in Node.
 - `worker/`: the Cloudflare Worker. `GameRoom` adds sockets, a timer, and storage around `room.ts`. `Lobby` is the room list.
-- `game/client/`: the three.js view, input, sound, room list, and screen display. `FigurePreview.tsx` draws the lobby figure with its own small renderer.
+- `game/client/`: the three.js view, input, sound, room list, and screen display. `FigurePreview.tsx` draws the lobby figure with its own small renderer. `skins.ts` draws the pistol looks, and `PistolMenu.tsx` is the pistol menu. The colours and names of the looks are in `theme/theme.ts`, and `TUNING.skins` is how many the room accepts.
 - `app/favicon.ico`, `app/icon.png`, `app/apple-icon.png`: the site icon, a paper pointer. The source drawing is `mockups/icons/pointer.svg`. The phone icon has a cream background.
 - `app/workbench/`: the game is the `game` window kind.
 - `theme/theme.ts`: the colour system. Every colour of the desktop and the game is defined there, with the eight player colours and their names. `app/layout.tsx` turns the desktop colours into CSS variables. The style files use only those variables.
@@ -97,7 +99,7 @@ Not done:
 
 ## Verification
 
-- Automated: `pnpm test` runs 65 tests of the simulation, the room logic, and the origin check through their public functions.
+- Automated: `pnpm test` runs 71 tests of the simulation, the room logic, and the origin check through their public functions.
 - Live on one machine, 2026-11-17, with the Worker under `wrangler dev` and one browser player plus two scripted players:
   - Room list, create, join, and a refused colour worked. The fifth room was refused. An empty room left the list.
   - The browser player ran 6.00 m in 1 second in a room, so prediction and the server agree.
@@ -106,8 +108,10 @@ Not done:
 - Colours, live on one machine, 2026-11-17, after the move to Sea glass: desktop, text editor, file manager, browser window, new file dialog, game lobby, room list, pause menu, scoreboard with four players, kill feed, and "Killed by" drew in the theme colours with no page error. A script read the colour of every text and control in nine screens and found none outside the theme.
 - Live on Cloudflare and the production site, 2026-11-17: the Worker refused requests with no origin and from another site with 403, for the room list, room creation, and the socket. From `www.janicodes.dev`, two browser players created and joined a room, each received 30 updates per second, the scoreboard listed both, and the room left the list after both left.
 - Lobby and site icon, live on one machine, 2026-11-17, in a browser with no window: the lobby drew with no page error, the figure changed colour with the swatch, and 40 pictures over 9 seconds showed the hop and spin, the crouch dance, and the wobble. The page served the three icon links, and each one loaded.
+- Pistol looks, live on one machine, 2026-11-18, with the Worker under `wrangler dev`, in a browser with no window: the pistol menu opened, the arrow keys and a click changed the look, Esc closed the menu and left the game window open, and the choice was saved. Each of the seven looks drew on the pistol in a practice match with no page error. In a room with one browser player and two scripted players, each player received the others' looks, and a scripted player that sent no look got "Ink steel".
 - Not verified:
   - The fall flat gag, the lobby in a narrow window, and the site icon in a real browser tab and on a phone.
+  - Another player's pistol look as drawn on their figure in a match. The room sends the right look to every player, and the lobby figure draws it, but nobody has looked at it in a match.
   - The final kill count screen in Sea glass, hover states, and narrow screens.
   - Mouse lock with a real mouse. The automated browser cannot lock the mouse, so the lock was simulated.
   - Sound. The automated browser has no audio output.

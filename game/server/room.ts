@@ -44,7 +44,8 @@ export function createRoom(map: GameMap, hooks: RoomHooks, saved?: SavedRoom) {
       if (message.t === "join" && !c.player) {
         const id = String(message.id).slice(0, 64), other = clientOf(id);
         if (other) { clients.delete(other); hooks.close(other); } // the same player opened a new connection
-        const result = join(match, { id, name: String(message.name), colour: Math.abs(Math.floor(number(message.colour))) % 8 });
+        const skin = number(message.skin);
+        const result = join(match, { id, name: String(message.name), colour: Math.abs(Math.floor(number(message.colour))) % 8, skin: Number.isInteger(skin) && skin >= 0 && skin < TUNING.skins ? skin : 0 });
         if (!result.ok) { hooks.send(client, { t: "refused", reason: result.reason }); clients.delete(client); hooks.close(client); return; }
         c.player = id; started = true;
         hooks.send(client, { t: "joined", id });

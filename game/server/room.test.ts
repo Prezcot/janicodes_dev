@@ -113,4 +113,16 @@ describe("a room", () => {
     expect(changes()).toBe(3);
     expect(room.info()).toEqual({ players: 1, colours: [0, 1], endsIn: 1800 });
   });
+
+  it("keeps a valid pistol skin and uses the first skin for a bad or missing one", () => {
+    const { room, snap } = setup();
+    const enter = (client: string, colour: number, skin?: unknown) => { room.connect(client); room.receive(client, { t: "join", id: client, name: client, colour, skin } as ClientMessage); };
+    enter("c1", 0, 4);
+    enter("c2", 1, "steel");
+    enter("c3", 2);
+    enter("c4", 3, -2.5);
+    room.tick(TICK);
+    const skins = Object.fromEntries(snap("c1").snap.players.map((view) => [view.id, view.skin]));
+    expect(skins).toEqual({ c1: 4, c2: 0, c3: 0, c4: 0 });
+  });
 });

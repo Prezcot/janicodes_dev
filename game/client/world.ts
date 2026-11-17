@@ -1,6 +1,7 @@
 import * as THREE from "three";
 import type { GameMap, Solid } from "../sim";
 import { alpha, theme } from "../../theme/theme";
+import { gripFaces, pistolLook, slideFaces } from "./skins";
 
 const C = theme.game;
 const TILE = 2; // metres covered by one texture tile
@@ -85,19 +86,19 @@ export function buildWorld(map: GameMap) {
 }
 
 /** The pistol and a folded-paper hand, drawn in front of the camera. */
-export function buildViewModel(colour: string) {
+export function buildViewModel(colour: string, skin = 0) {
   const group = new THREE.Group();
-  const metal = new THREE.MeshLambertMaterial({ color: C.metal });
+  const look = pistolLook(skin, colour), finish = { detail: 4, transparent: false };
   const paper = new THREE.MeshLambertMaterial({ color: colour, flatShading: true });
   const ink = new THREE.LineBasicMaterial({ color: C.edge });
-  const part = (geo: THREE.BufferGeometry, material: THREE.Material, x: number, y: number, z: number, rx = 0) => {
+  const part = (geo: THREE.BufferGeometry, material: THREE.Material | THREE.Material[], x: number, y: number, z: number, rx = 0) => {
     const mesh = new THREE.Mesh(geo, material);
     mesh.position.set(x, y, z); mesh.rotation.x = rx;
     mesh.add(new THREE.LineSegments(new THREE.EdgesGeometry(geo, 20), ink));
     group.add(mesh);
   };
-  part(new THREE.BoxGeometry(0.05, 0.075, 0.26), metal, 0, 0.03, -0.06);
-  part(new THREE.BoxGeometry(0.045, 0.13, 0.065), metal, 0, -0.06, 0.03, -0.25);
+  part(new THREE.BoxGeometry(0.05, 0.075, 0.26), slideFaces(look, finish), 0, 0.03, -0.06);
+  part(new THREE.BoxGeometry(0.045, 0.13, 0.065), gripFaces(look, finish), 0, -0.06, 0.03, -0.25);
   part(new THREE.CylinderGeometry(0.05, 0.075, 0.5, 4), paper, 0.01, -0.13, 0.27, Math.PI / 2 - 0.25);
   group.add(new THREE.HemisphereLight(C.light.sky, C.light.hand, 2.2));
   return group;
@@ -119,17 +120,17 @@ export function bulletHoleTexture() {
 }
 
 /** A Folded paper player. It faces the way the player looks, and its height matches the hit shape. */
-export function buildFigure(colour: string) {
+export function buildFigure(colour: string, skin = 0) {
   const root = new THREE.Group(), body = new THREE.Group();
   body.rotation.y = Math.PI; // parts are built facing +z; yaw 0 looks toward -z
   body.scale.setScalar(0.96);
   root.add(body);
   const flat = new THREE.MeshLambertMaterial({ color: colour, flatShading: true, transparent: true });
   const dark = new THREE.MeshLambertMaterial({ color: new THREE.Color(colour).multiplyScalar(0.72), flatShading: true, transparent: true });
-  const metal = new THREE.MeshLambertMaterial({ color: C.metal, transparent: true });
+  const pistol = slideFaces(pistolLook(skin, colour), { detail: 2, transparent: true });
   const ink = new THREE.LineBasicMaterial({ color: C.edge, transparent: true });
   const solidInk = new THREE.MeshBasicMaterial({ color: C.edge, transparent: true });
-  const piece = (geo: THREE.BufferGeometry, material: THREE.Material) => {
+  const piece = (geo: THREE.BufferGeometry, material: THREE.Material | THREE.Material[]) => {
     const mesh = new THREE.Mesh(geo, material);
     mesh.add(new THREE.LineSegments(new THREE.EdgesGeometry(geo, 20), ink));
     body.add(mesh);
@@ -143,7 +144,7 @@ export function buildFigure(colour: string) {
   const head = piece(new THREE.IcosahedronGeometry(0.2, 0), flat);
   const visor = new THREE.Mesh(new THREE.BoxGeometry(0.26, 0.06, 0.05), solidInk);
   body.add(visor);
-  const leftArm = piece(arm, flat), rightArm = piece(arm, flat), gun = piece(new THREE.BoxGeometry(0.05, 0.075, 0.26), metal);
+  const leftArm = piece(arm, flat), rightArm = piece(arm, flat), gun = piece(new THREE.BoxGeometry(0.05, 0.075, 0.26), pistol);
   leftArm.rotation.z = -0.14; rightArm.rotation.x = -Math.PI / 2;
 
   let crouched: boolean | undefined;
@@ -167,6 +168,15 @@ export function buildFigure(colour: string) {
       rightArm.position.set(0.33, up(0.52), out(0.52) + 0.3);
       gun.position.set(0.33, up(0.57), out(0.57) + 0.62);
     },
-    opacity(value: number) { for (const m of [flat, dark, metal, ink, solidInk]) m.opacity = value; },
+    opacity(value: number) { for (const m of [flat, dark, ink, solidInk, ...pistol]) m.opacity = value; },
   };
+}
+
+/** Free the shapes, materials, and textures of an object that is no longer shown. */
+export function discard(root: THREE.Object3D) {
+  root.traverse((part) => {
+    const mesh = part as THREE.Mesh;
+    mesh.geometry?.dispose();
+    for (const material of [mesh.material ?? []].flat()) { (material as THREE.MeshLambertMaterial).map?.dispose(); material.dispose(); }
+  });
 }

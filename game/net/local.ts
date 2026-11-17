@@ -3,7 +3,7 @@ import type { GameEvent, GameMap, Snapshot } from "../sim";
 import type { MatchConnection } from "./connection";
 
 /** Run a match in this tab, for one player. When the match ends or removes the player, a new one starts. */
-export function connectLocal(map: GameMap, who: { id: string; name: string; colour: number }): MatchConnection {
+export function connectLocal(map: GameMap, who: { id: string; name: string; colour: number; skin: number }): MatchConnection {
   let match = createMatch(map);
   join(match, who);
   let listener: (snapshot: Snapshot, events: GameEvent[]) => void = () => {};

@@ -116,3 +116,23 @@ describe("names", () => {
     }
   });
 });
+
+describe("pistol skin across servers and restarts", () => {
+  it("gives every other player the first skin when the server does not know skins", () => {
+    const server = createMatch(flatMap()), client = createMatch(flatMap());
+    join(server, { id: "a", name: "a", colour: 0 });
+    join(server, { id: "b", name: "b", colour: 1, skin: 4 });
+    join(client, { id: "a", name: "a", colour: 0 });
+    const old = snapshot(server);
+    for (const view of old.players) delete (view as { skin?: number }).skin;
+    mirror(client, old, "a");
+    expect(snapshot(client).players.find((view) => view.id === "b")!.skin).toBe(0);
+  });
+
+  it("keeps the skin across a room restart", () => {
+    const before = createMatch(flatMap()), after = createMatch(flatMap());
+    join(before, { id: "a", name: "a", colour: 0, skin: 2 });
+    restore(after, save(before));
+    expect(snapshot(after).players[0].skin).toBe(2);
+  });
+});

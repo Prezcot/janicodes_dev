@@ -3,14 +3,14 @@
 import { useEffect, useRef } from "react";
 import * as THREE from "three";
 import { theme } from "../../theme/theme";
-import { buildFigure } from "./world";
+import { buildFigure, discard } from "./world";
 
 const seconds = () => performance.now() / 1000;
 
 /** The player's paper figure in the lobby. It sways, and now and then it does a short gag. */
-export function FigurePreview({ colour }: { colour: number }) {
+export function FigurePreview({ colour, skin }: { colour: number; skin: number }) {
   const canvas = useRef<HTMLCanvasElement>(null);
-  const show = useRef<(colour: number) => void>(() => {});
+  const show = useRef<(colour: number, skin: number) => void>(() => {});
 
   useEffect(() => {
     const view = canvas.current!;
@@ -31,14 +31,14 @@ export function FigurePreview({ colour }: { colour: number }) {
     const remove = () => {
       if (!figure) return;
       scene.remove(figure.root);
-      figure.root.traverse(part => { const mesh = part as THREE.Mesh; mesh.geometry?.dispose(); (mesh.material as THREE.Material | undefined)?.dispose(); });
+      discard(figure.root);
     };
-    show.current = next => {
+    show.current = (next, nextSkin) => {
       remove();
-      figure = buildFigure(theme.players[next].colour);
+      figure = buildFigure(theme.players[next].colour, nextSkin);
       figure.root.rotation.order = "YXZ";
       scene.add(figure.root);
-      gag = 1; gagAt = seconds(); nextGag = gagAt + 3; // a new colour arrives with a hop and a spin
+      gag = 1; gagAt = seconds(); nextGag = gagAt + 3; // a new colour or pistol arrives with a hop and a spin
     };
 
     let raf = requestAnimationFrame(function frame() {
@@ -70,7 +70,7 @@ export function FigurePreview({ colour }: { colour: number }) {
     return () => { cancelAnimationFrame(raf); remove(); renderer.dispose(); show.current = () => {}; };
   }, []);
 
-  useEffect(() => { show.current(colour); }, [colour]);
+  useEffect(() => { show.current(colour, skin); }, [colour, skin]);
 
   return <canvas ref={canvas} className="fps-figure" role="img" aria-label={`Your player, in ${theme.players[colour].name}`} />;
 }

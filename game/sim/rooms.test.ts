@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
-import { activeCount, advance, applyInput, createMatch, drainEvents, join, leave, snapshot } from "./index";
+import { activeCount, advance, applyInput, createMatch, drainEvents, join, leave, snapshot, TUNING } from "./index";
+import { theme } from "../../theme/theme";
 import { groundAt, pushOut } from "./collide";
 import { SPLIT_LEVEL } from "./map";
 import { flatMap, input } from "./testing";
@@ -134,5 +135,29 @@ describe("the Split level map", () => {
     const { pos } = player(match, "a");
     expect(pos[0]).toBeGreaterThan(-17);
     expect(pos[0]).toBeLessThan(-16.5);
+  });
+});
+
+describe("pistol skin", () => {
+  it("shows each player's chosen skin to the room", () => {
+    const match = room();
+    join(match, { id: "a", name: "a", colour: 0, skin: 3 });
+    add(match, "b", 1);
+    expect(player(match, "a").skin).toBe(3);
+    expect(player(match, "b").skin).toBe(0); // no choice: the first skin
+  });
+
+  it("lets a returning player come back with another skin", () => {
+    const match = room();
+    join(match, { id: "a", name: "a", colour: 0, skin: 3 });
+    leave(match, "a");
+    join(match, { id: "a", name: "a", colour: 0, skin: 5 });
+    expect(player(match, "a").skin).toBe(5);
+  });
+});
+
+describe("the list of pistol looks", () => {
+  it("has one look for every skin number the room accepts", () => {
+    expect(theme.skins).toHaveLength(TUNING.skins);
   });
 });

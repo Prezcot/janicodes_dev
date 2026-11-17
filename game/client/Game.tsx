@@ -7,6 +7,7 @@ import { connectRoom, type CloseReason } from "../net/remote";
 import { randomName, SPLIT_LEVEL, TUNING } from "../sim";
 import { startGame, type Hud, type Options, type Score } from "./engine";
 import { FigurePreview } from "./FigurePreview";
+import { PistolMenu } from "./PistolMenu";
 import { theme } from "../../theme/theme";
 import "./game.css";
 
@@ -28,7 +29,7 @@ const store = (key: string, value: string) => { try { localStorage.setItem(`pape
 const hex = (colour: number) => theme.players[colour].colour;
 const clock = (seconds: number) => `${Math.floor(seconds / 60)}:${String(seconds % 60).padStart(2, "0")}`;
 
-type Play = { code: string; name: string; colour: number } | { code: ""; name: string; colour: number };
+type Play = { code: string; name: string; colour: number; skin: number };
 
 const loadOptions = (): Options => ({ sensitivity: Number(load("sensitivity")) || 1, volume: load("volume") === "" ? 0.6 : Number(load("volume")) });
 
@@ -56,6 +57,10 @@ export default function Game() {
 function Lobby({ notice, options, onOptions, onPlay }: { notice: string; options: Options; onOptions: (next: Options) => void; onPlay: (play: Play) => void }) {
   const [name, setName] = useState(() => load("name"));
   const [colour, setColour] = useState(() => Math.min(7, Math.max(0, Number(load("colour")) || 0)));
+  const [skin, setSkin] = useState(() => (theme.skins[Number(load("skin"))] ? Number(load("skin")) : 0));
+  // The pistol menu covers the lobby while it is open. Focus goes back to its button when it closes.
+  const [picking, setPicking] = useState(false);
+  const back = useRef(false);
   const [rooms, setRooms] = useState<RoomInfo[] | null>(null);
   const [error, setError] = useState("");
   const [now, setNow] = useState(() => Date.now());
@@ -78,7 +83,7 @@ function Lobby({ notice, options, onOptions, onPlay }: { notice: string; options
   const enter = (code: string) => {
     const chosen = name.trim().slice(0, TUNING.nameLength) || randomName();
     store("name", name.trim()); store("colour", String(colour));
-    onPlay({ code, name: chosen, colour });
+    onPlay({ code, name: chosen, colour, skin });
   };
   const create = async () => {
     setError("");
@@ -90,6 +95,7 @@ function Lobby({ notice, options, onOptions, onPlay }: { notice: string; options
   };
 
   const taken = rooms?.some(room => room.colours.includes(colour)) ?? false;
+  if (picking) return <PistolMenu colour={colour} skin={skin} onPick={next => { setSkin(next); store("skin", String(next)); }} onDone={() => { back.current = true; setPicking(false); }} />;
   return <div className="fps-lobby">
     <header>
       <h2>Paper Arena</h2>
@@ -99,7 +105,10 @@ function Lobby({ notice, options, onOptions, onPlay }: { notice: string; options
     <div className="fps-lobby-grid">
       <section className="fps-sheet fps-player">
         <h3>Your player</h3>
-        <FigurePreview colour={colour} />
+        <div className="fps-you">
+          <FigurePreview colour={colour} skin={skin} />
+          <button className="btn" ref={node => { if (node && back.current) { back.current = false; node.focus(); } }} onClick={() => setPicking(true)}>Change pistol</button>
+        </div>
         <div className="fps-fields">
           <label>Name (optional)<input value={name} maxLength={TUNING.nameLength} onChange={e => setName(e.target.value)} /><small>Random name if empty.</small></label>
           <div className="fps-colour">
@@ -168,11 +177,11 @@ function Arena({ play, options, onOptions, onExit }: { play: Play; options: Opti
   useEffect(() => {
     let id = load("id");
     if (!id) { id = crypto.randomUUID(); store("id", id); }
-    const who = { id, name: play.name, colour: play.colour };
+    const who = { id, name: play.name, colour: play.colour, skin: play.skin };
     const connection = play.code
       ? connectRoom({ ...who, url: `${SERVER.replace(/^http/, "ws")}/room/${play.code}/ws`, map: SPLIT_LEVEL, onClosed: reason => exit.current(reason) })
       : connectLocal(SPLIT_LEVEL, who);
-    const started = startGame(canvas.current!, SPLIT_LEVEL, connection, play.colour, options, next => { setHud(next); if (next.locked) setPlayed(true); });
+    const started = startGame(canvas.current!, SPLIT_LEVEL, connection, play.colour, play.skin, options, next => { setHud(next); if (next.locked) setPlayed(true); });
     game.current = started;
     return () => { started.stop(); connection.close(); game.current = null; };
     // The options at start are enough: later changes go through setOptions.

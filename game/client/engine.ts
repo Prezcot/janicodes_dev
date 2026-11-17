@@ -33,7 +33,7 @@ const HEARING = 15, STRIDE = 2.2; // metres
 const clamp = (v: number, a: number, b: number) => Math.min(b, Math.max(a, v));
 
 /** Run the game on a canvas. */
-export function startGame(canvas: HTMLCanvasElement, map: GameMap, conn: MatchConnection, colour: number, options: Options, onHud: (hud: Hud) => void) {
+export function startGame(canvas: HTMLCanvasElement, map: GameMap, conn: MatchConnection, colour: number, skin: number, options: Options, onHud: (hud: Hud) => void) {
   const renderer = new THREE.WebGLRenderer({ canvas, antialias: true });
   renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
   renderer.autoClear = false;
@@ -44,7 +44,7 @@ export function startGame(canvas: HTMLCanvasElement, map: GameMap, conn: MatchCo
   camera.rotation.order = "YXZ";
   // The pistol is drawn in its own pass, so it never pokes through a wall.
   const viewScene = new THREE.Scene(), viewCamera = new THREE.PerspectiveCamera(55, 1, 0.01, 10);
-  const gun = buildViewModel(theme.players[colour].colour);
+  const gun = buildViewModel(theme.players[colour].colour, skin);
   const flash = new THREE.Mesh(new THREE.CircleGeometry(0.07, 7), new THREE.MeshBasicMaterial({ color: theme.game.flash }));
   flash.position.set(0, 0.04, -0.22);
   gun.add(flash);
@@ -65,7 +65,7 @@ export function startGame(canvas: HTMLCanvasElement, map: GameMap, conn: MatchCo
     return { line, until: 0 };
   });
   let nextTracer = 0;
-  const figures = new Map<string, { figure: ReturnType<typeof buildFigure>; colour: number; deadFor: number; walked: number }>();
+  const figures = new Map<string, { figure: ReturnType<typeof buildFigure>; colour: number; skin: number; deadFor: number; walked: number }>();
 
   const keys = new Set<string>();
   // A tap shorter than one step still counts: taps hold a press until the next input is sent.
@@ -188,9 +188,9 @@ export function startGame(canvas: HTMLCanvasElement, map: GameMap, conn: MatchCo
       if (p.id === conn.playerId || p.left) continue;
       present.add(p.id);
       let entry = figures.get(p.id);
-      if (!entry || entry.colour !== p.colour) {
+      if (!entry || entry.colour !== p.colour || entry.skin !== p.skin) {
         if (entry) scene.remove(entry.figure.root);
-        entry = { figure: buildFigure(theme.players[p.colour].colour), colour: p.colour, deadFor: 0, walked: 0 };
+        entry = { figure: buildFigure(theme.players[p.colour].colour, p.skin), colour: p.colour, skin: p.skin, deadFor: 0, walked: 0 };
         figures.set(p.id, entry);
         scene.add(entry.figure.root);
       }
