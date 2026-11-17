@@ -46,8 +46,8 @@ export default function Game() {
   const [play, setPlay] = useState<Play | null>(null);
   const [notice, setNotice] = useState("");
   const [options, setOptions] = useState(loadOptions);
-  // Esc frees the mouse. It must not also close the Workbench window.
-  return <div className="fps-root" tabIndex={0} onKeyDown={e => { if (e.key === "Escape") e.stopPropagation(); }}>
+  // Esc frees the mouse. It must not also close the Workbench window, whose own Esc listener is on the document.
+  return <div className="fps-root" tabIndex={0} onKeyDown={e => { if (e.key === "Escape") e.nativeEvent.stopImmediatePropagation(); }}>
     {play
       ? <Arena key={play.code} play={play} options={options} onOptions={setOptions} onExit={reason => { setNotice(WHY[reason]); setPlay(null); }} />
       : <Lobby notice={notice} options={options} onOptions={setOptions} onPlay={next => { setNotice(""); setPlay(next); }} />}
