@@ -50,6 +50,7 @@ The single record of what the game is, what is built, and what is verified. Upda
 - Keys: WASD, Space, Left Shift, R, left click, Tab, and Esc for the game menu.
 - Settings: mouse sensitivity and volume. They are in the lobby, and in the game menu that shows when the mouse is free after play has started. The first screen of a match shows only "Click to play" and the key hints. The match does not pause while the menu is open.
 - Lobby: "Your player" on the left, with a preview of the paper figure in the chosen colour, the name, the colour, and the settings. Rooms and the key hints are on the right. In a narrow window the lobby is one column. The figure sways, and at random times it hops and spins, dances in a crouch, falls flat, or wobbles. A new colour arrives with a hop and a spin. The figure stays still when the system asks for reduced motion.
+- Keyboard in the lobby: the arrow keys change the colour. The game shows a focus ring while the mouse is free. No label in the game is smaller than 12 pixels.
 
 **Hosting and cost**
 - The site stays on Vercel. Multiplayer runs on Cloudflare Durable Objects on the Workers Free plan: one object per room, plus one for the room list.

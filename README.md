@@ -15,9 +15,9 @@ Open http://127.0.0.1:3000. The desktop opens at once and saves your workspace i
 
 ## Included
 
-- Desktop text files, sample projects, and a Home/Projects file manager.
+- Desktop text files, project files, and a Home/Projects file manager.
 - Resizable windows with direct dragging, shadow lift, close, minimize, restore and maximize controls.
-- Motion transitions and Lucide icons; desktop shortcuts open on double-click.
+- Motion transitions and Lucide icons; desktop shortcuts open on one click.
 - Desktop context menus, folder renaming and new text files with automatic saving.
 - Editable notes with explicit Save, plus text-file downloads.
 - Browser-style search launcher that opens DuckDuckGo in a real tab.
@@ -27,7 +27,7 @@ Open http://127.0.0.1:3000. The desktop opens at once and saves your workspace i
 
 The 100 MB limit caps the UTF-8 serialized workspace data saved by this app. It does not reserve disk space or set the browser's quota, and does not include downloaded application assets. Storage is used only for actual workspace data. Browser storage can be cleared or evicted. A temporary session does not persist edits. Unsaved notes remain available while switching windows; save them before leaving the desktop.
 
-Portfolio details are currently labeled sample content. Replace the text in `app/workbench/desktop.tsx` with verified resume and project information before publishing. Window positions are session-only. General websites open externally; this is not an embedded Firefox engine.
+The portfolio text is in the `docs` table in `app/workbench/desktop.tsx`. Window positions are session-only. General websites open externally; this is not an embedded Firefox engine.
 
 ## Structure
 

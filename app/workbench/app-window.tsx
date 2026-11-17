@@ -154,7 +154,7 @@ export default function AppWindow({ win, z, taskRefs, onFocus, onClose, onMin, o
     animate={controls}
     exit={{ opacity: 0, scaleX: reduced ? 1 : 0.97, scaleY: reduced ? 1 : 0.97, transition: { duration: reduced ? 0 : 0.14, ease } }}
     transition={{ layout: { duration: reduced ? 0 : 0.24, ease } }}
-    style={{ "--window-x": `${position.x}px`, "--window-y": `${position.y}px`, "--window-width": size ? `${size.width}px` : undefined, left: win.maximized ? 0 : position.x, top: win.maximized ? 0 : position.y, width: !win.maximized && size ? size.width : undefined, height: !win.maximized && size ? size.height : undefined, maxHeight: !win.maximized && size ? "none" : undefined, zIndex: z, transformOrigin: "0 0" } as CSSProperties}
+    style={{ "--open-y": `${win.y}px`, "--window-x": `${position.x}px`, "--window-y": `${position.y}px`, "--window-width": size ? `${size.width}px` : undefined, left: win.maximized ? 0 : position.x, top: win.maximized ? 0 : position.y, width: !win.maximized && size ? size.width : undefined, height: !win.maximized && size ? size.height : undefined, maxHeight: !win.maximized && size ? "none" : undefined, zIndex: z, transformOrigin: "0 0" } as CSSProperties}
     onPointerDown={onFocus}
     onPointerMove={move}
     onPointerUp={stopDrag}

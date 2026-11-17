@@ -4,7 +4,7 @@ import { cssVariables } from "../theme/theme";
 
 export const metadata: Metadata = {
   title: "JANI//OS — Workbench",
-  description: "An interactive portfolio operating system for the browser.",
+  description: "Janindu Mapa is a software engineer who builds web and mobile products. This portfolio is a small desktop in the browser.",
 };
 
 export default function RootLayout({

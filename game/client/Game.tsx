@@ -99,8 +99,15 @@ function Lobby({ notice, options, onOptions, onPlay }: { notice: string; options
           <label>Name (optional)<input value={name} maxLength={TUNING.nameLength} onChange={e => setName(e.target.value)} /><small>Random name if empty.</small></label>
           <div className="fps-colour">
             <span>Colour: {theme.players[colour].name}</span>
-            <div role="radiogroup" aria-label="Colour" className="fps-swatches">
-              {theme.players.map((p, i) => <button key={i} role="radio" aria-checked={colour === i} aria-label={p.name} title={p.name} style={{ background: p.colour }} onClick={() => setColour(i)} />)}
+            <div role="radiogroup" aria-label="Colour" className="fps-swatches" onKeyDown={e => {
+              const step = e.key === "ArrowRight" || e.key === "ArrowDown" ? 1 : e.key === "ArrowLeft" || e.key === "ArrowUp" ? -1 : 0;
+              if (!step) return;
+              e.preventDefault();
+              const next = (colour + step + theme.players.length) % theme.players.length;
+              setColour(next);
+              (e.currentTarget.children[next] as HTMLElement).focus();
+            }}>
+              {theme.players.map((p, i) => <button key={i} role="radio" aria-checked={colour === i} tabIndex={colour === i ? 0 : -1} aria-label={p.name} title={p.name} style={{ background: p.colour }} onClick={() => setColour(i)} />)}
             </div>
           </div>
           <div className="fps-settings"><h3>Settings</h3><Settings options={options} onChange={onOptions} /></div>
@@ -111,7 +118,7 @@ function Lobby({ notice, options, onOptions, onPlay }: { notice: string; options
           <h3>{SERVER ? "Rooms" : "Play"}</h3>
           {SERVER ? <>
             <div className="fps-rooms">
-              {rooms === null ? !error && <p>Loading rooms…</p> : rooms.length === 0 ? <p><strong>No rooms open.</strong> Create the first room or practise alone.</p> : rooms.map(room => {
+              {rooms === null ? !error && <p>Loading rooms…</p> : rooms.length === 0 ? <p><strong>No rooms open.</strong> Create the first room or practice alone.</p> : rooms.map(room => {
                 const secondsLeft = room.endsAt === null ? null : Math.max(0, Math.round((room.endsAt - now) / 1000));
                 const full = room.players >= TUNING.maxPlayers, ending = secondsLeft !== null && secondsLeft <= TUNING.joinCutoff, mine = room.colours.includes(colour);
                 return <div key={room.code} className="fps-room">
@@ -200,7 +207,7 @@ function Arena({ play, options, onOptions, onExit }: { play: Play; options: Opti
         <div className="fps-actions">
           {played && <button className="btn primary" onClick={() => game.current?.enter()}>Resume</button>}
           <button className="btn" onClick={() => void canvas.current?.parentElement?.requestFullscreen()}>Full screen</button>
-          <button className="btn" onClick={() => onExit("over")}>{play.code ? "Leave room" : "Stop"}</button>
+          <button className="btn" onClick={() => onExit("over")}>{play.code ? "Leave room" : "Leave practice"}</button>
         </div>
       </div>
     </div>}
