@@ -1,14 +1,16 @@
 "use client";
 
+import dynamic from "next/dynamic";
 import { useEffect, useRef, useState } from "react";
 import { AnimatePresence, motion, useReducedMotion } from "motion/react";
-import { FileText, Folder, Globe, NotebookPen } from "lucide-react";
+import { Crosshair, FileText, Folder, Globe, NotebookPen } from "lucide-react";
 import AppWindow, { type Win } from "./app-window";
-import type { Settings } from "./types";
 import "./desktop.css";
 
-type Props = { files: Record<string, string>; onSaveFile: (name: string, content: string) => Promise<void>; folderName: string; onRenameFolder: (name: string) => Promise<void>; settings: Settings; initialNote: string; isLive: boolean; storageNotice: string; onSaveNote: (note: string) => Promise<void>; onSetup: () => void };
+type Props = { files: Record<string, string>; onSaveFile: (name: string, content: string) => Promise<void>; folderName: string; onRenameFolder: (name: string) => Promise<void>; initialNote: string; isLive: boolean; onSaveNote: (note: string) => Promise<void> };
 type SaveState = "idle" | "saving" | "saved" | "error";
+// The game loads only when its window opens, so the desktop does not carry its code.
+const Game = dynamic(() => import("@/game/client/Game"), { ssr: false, loading: () => <div className="window-body">Loading the game…</div> });
 type ContentProps = { files: Record<string, string>; onSaveFile: (name: string, content: string) => Promise<void>; folderName: string; win: Win; folder: "Home" | "Projects"; setFolder: (folder: "Home" | "Projects") => void; open: (kind: Win["kind"], file?: string) => void; note: string; setNote: (note: string) => void; save: () => Promise<void>; saveState: SaveState; saveError: string; isLive: boolean; fileText: (file: string) => string };
 
 const docs: Record<string, string> = {
@@ -19,7 +21,7 @@ const docs: Record<string, string> = {
 };
 const projectFiles = ["Project 01 — sample", "Project 02 — sample", "readme.txt"];
 
-export default function Desktop({ files, onSaveFile, folderName, onRenameFolder, settings, initialNote, isLive, storageNotice, onSaveNote, onSetup }: Props) {
+export default function Desktop({ files, onSaveFile, folderName, onRenameFolder, initialNote, isLive, onSaveNote }: Props) {
   const [selected, setSelected] = useState("");
   const [renaming, setRenaming] = useState(false);
   const [draftName, setDraftName] = useState(folderName);
@@ -54,19 +56,15 @@ export default function Desktop({ files, onSaveFile, folderName, onRenameFolder,
     catch { setRenameError("Could not save the folder name. Try again."); }
     finally { setRenameBusy(false); }
   };
-  const [clock, setClock] = useState("");
   const taskRefs = useRef(new Map<string, HTMLButtonElement>());
   const reduced = useReducedMotion();
-  const [windows, setWindows] = useState<Win[]>([{ id: "editor:start-here.txt", title: "start-here.txt — Text editor", kind: "editor", file: "start-here.txt", x: 160, y: 102 }]);
+  const [windows, setWindows] = useState<Win[]>([{ id: "editor:start-here.txt", title: "start-here.txt — Text editor", kind: "editor", file: "start-here.txt", x: 160, y: 60 }]);
   const [active, setActive] = useState("editor:start-here.txt");
   const [focusOrder, setFocusOrder] = useState(["editor:start-here.txt"]);
   const [folder, setFolder] = useState<"Home" | "Projects">("Home");
   const [note, setNote] = useState(initialNote);
   const [saveState, setSaveState] = useState<SaveState>("idle");
   const [saveError, setSaveError] = useState("");
-  useEffect(() => { const tick = () => setClock(new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })); tick(); const id = setInterval(tick, 30000); return () => clearInterval(id); }, []);
-  const name = settings.name.trim() || "Guest";
-  const wall = settings.wallpaper === "work" ? "wall-work" : settings.wallpaper === "clean" ? "wall-clean" : "";
 
   const raise = (id: string) => {
     setActive(id);
@@ -78,7 +76,7 @@ export default function Desktop({ files, onSaveFile, folderName, onRenameFolder,
   };
   const open = (kind: Win["kind"], file?: string) => {
     const id = kind === "editor" ? `editor:${file}` : kind;
-    setWindows(ws => { const found = ws.find(w => w.id === id); if (found) return ws.map(w => w.id === id ? { ...w, minimized: false } : w); return [...ws, { id, kind, file, title: kind === "editor" ? `${file} — Text editor` : kind === "files" ? "Files — File manager" : "Web search — Browser", x: kind === "editor" ? 160 : 230, y: kind === "editor" ? 100 : 130 }]; }); raise(id);
+    setWindows(ws => { const found = ws.find(w => w.id === id); if (found) return ws.map(w => w.id === id ? { ...w, minimized: false } : w); return [...ws, { id, kind, file, title: kind === "editor" ? `${file} — Text editor` : kind === "files" ? "Files — File manager" : kind === "game" ? "Paper Arena — Game" : "Web search — Browser", x: kind === "editor" ? 160 : kind === "game" ? 120 : 230, y: kind === "editor" ? 58 : kind === "game" ? 28 : 88 }]; }); raise(id);
   };
   const close = (id: string) => {
     setWindows(ws => ws.filter(w => w.id !== id));
@@ -102,9 +100,8 @@ export default function Desktop({ files, onSaveFile, folderName, onRenameFolder,
   const save = async () => { const snapshot = note; setSaveState("saving"); setSaveError(""); try { await onSaveNote(snapshot); setSaveState("saved"); } catch (error) { const message = error instanceof Error ? error.message : "Unable to save this note."; setSaveError(message); setSaveState("error"); } };
   const fileText = (file: string) => docs[file] || `# ${file}\n\nSample project notes would live here. Project details and metrics are placeholders.`;
 
-  return <motion.div onContextMenu={e => { if ((e.target as HTMLElement).closest(".app-window, .panel, .topbar, input, textarea, .desktop-menu")) return; e.preventDefault(); setMenu({ x: Math.min(e.clientX, window.innerWidth - 205), y: Math.min(e.clientY, window.innerHeight - 180) }); }} className={`wb-root ${wall}`} initial={{ opacity: reduced ? 1 : 0 }} animate={{ opacity: 1 }} transition={{ duration: reduced ? 0 : 0.25 }}>
+  return <motion.div onContextMenu={e => { if ((e.target as HTMLElement).closest(".app-window, .panel, input, textarea, .desktop-menu")) return; e.preventDefault(); setMenu({ x: Math.min(e.clientX, window.innerWidth - 205), y: Math.min(e.clientY, window.innerHeight - 180) }); }} className="wb-root" initial={{ opacity: reduced ? 1 : 0 }} animate={{ opacity: 1 }} transition={{ duration: reduced ? 0 : 0.25 }}>
 
-    <header className="topbar"><span className="mini-brand">JANI<span>{"//"}</span>OS</span><span className="crumb">WORKBENCH / {isLive ? "LIVE SESSION" : "LOCAL SESSION"}</span><span className="clock">{name} · {clock}</span><button className="setup-link" disabled={saveState === "saving"} onClick={() => { if (note === initialNote || window.confirm("Your note has unsaved changes. Open setup without saving them?")) onSetup(); }}>Setup</button></header>
     <div className="desktop-icons">
       {[
         { id: "start-here.txt", label: "start-here.txt", Icon: FileText, launch: () => open("editor", "start-here.txt") },
@@ -112,6 +109,7 @@ export default function Desktop({ files, onSaveFile, folderName, onRenameFolder,
         { id: "skills.txt", label: "skills.txt", Icon: FileText, launch: () => open("editor", "skills.txt") },
         { id: "projects", label: folderName, Icon: Folder, launch: () => { setFolder("Projects"); open("files"); } },
         { id: "browser", label: "Web search", Icon: Globe, launch: () => open("browser") },
+        { id: "game", label: "Paper Arena", Icon: Crosshair, launch: () => open("game") },
         ...Object.keys(files).map(file => ({ id: file, label: file, Icon: FileText, launch: () => open("editor", file) })),
       ].map(({ id, label, Icon, launch }) => <div key={id} className="desktop-item">
         <button className={`desktop-icon ${selected === id ? "selected" : ""}`} aria-label={label} aria-pressed={selected === id}
@@ -128,7 +126,7 @@ export default function Desktop({ files, onSaveFile, folderName, onRenameFolder,
       </div>)}
     </div>
     {menu && <><div className="menu-dismiss" onClick={() => setMenu(null)} onContextMenu={e => { e.preventDefault(); setMenu(null); }} /><div className="desktop-menu" role="menu" style={{ left: menu.x, top: menu.y }} onKeyDown={e => { if (e.key === "Escape") { e.stopPropagation(); setMenu(null); } }}>
-      {menu.target && <button role="menuitem" autoFocus onClick={() => { const target = menu.target; setMenu(null); if (target === "projects") { setFolder("Projects"); open("files"); } else if (target === "browser") open("browser"); else open("editor", target); }}>Open</button>}
+      {menu.target && <button role="menuitem" autoFocus onClick={() => { const target = menu.target; setMenu(null); if (target === "projects") { setFolder("Projects"); open("files"); } else if (target === "browser") open("browser"); else if (target === "game") open("game"); else open("editor", target); }}>Open</button>}
       {menu.target === "projects" && <button role="menuitem" onClick={beginRename}>Rename <span>F2</span></button>}
       <button role="menuitem" autoFocus={!menu.target} onClick={() => { setMenu(null); setNewName("Untitled.txt"); setCreateError(""); setCreating(true); }}>New text file</button>
       <button role="menuitem" onClick={() => { setMenu(null); setFolder("Home"); open("files"); }}>Open file manager</button>
@@ -137,7 +135,7 @@ export default function Desktop({ files, onSaveFile, folderName, onRenameFolder,
     {creating && <div className="create-overlay"><form className="create-dialog" role="dialog" aria-modal="true" aria-labelledby="create-title" onSubmit={e => { e.preventDefault(); void createFile(); }} onKeyDown={e => { if (e.key === "Escape") { e.stopPropagation(); if (!createBusy) setCreating(false); } }}>
       <h2 id="create-title">New text file</h2>
       <label>File name<input autoFocus aria-label="File name" value={newName} maxLength={80} disabled={createBusy} onFocus={e => e.target.select()} onChange={e => setNewName(e.target.value)} /></label>
-      <p>{isLive ? "Temporary session — files will be lost when you reload. Install through Setup to keep them." : "Saved in this browser. Changes to your text save automatically."}</p>
+      <p>{isLive ? "Temporary session — files will be lost when you reload." : "Saved in this browser. Changes to your text save automatically."}</p>
       {createError && <p role="alert">{createError}</p>}
       <div className="actions"><button className="btn primary" disabled={createBusy}>Create</button><button type="button" className="btn" disabled={createBusy} onClick={() => setCreating(false)}>Cancel</button></div>
     </form></div>}
@@ -162,11 +160,11 @@ export default function Desktop({ files, onSaveFile, folderName, onRenameFolder,
           aria-pressed={active === w.id && !w.minimized}
           title={`${w.title}${w.minimized ? " (minimized)" : ""}`}
           onClick={() => activateTask(w)}>
-          <span className="task-icon" aria-hidden="true">{w.kind === "files" ? <Folder size={16} /> : w.kind === "browser" ? <Globe size={16} /> : w.file === "notes.txt" ? <NotebookPen size={16} /> : <FileText size={16} />}</span>
-          <span className="task-label">{w.file || (w.kind === "files" ? "Files" : "Browser")}</span>
+          <span className="task-icon" aria-hidden="true">{w.kind === "files" ? <Folder size={16} /> : w.kind === "browser" ? <Globe size={16} /> : w.kind === "game" ? <Crosshair size={16} /> : w.file === "notes.txt" ? <NotebookPen size={16} /> : <FileText size={16} />}</span>
+          <span className="task-label">{w.file || (w.kind === "files" ? "Files" : w.kind === "game" ? "Paper Arena" : "Browser")}</span>
         </motion.button>)}
       </nav>
-      <span className="panel-status">{storageNotice || (isLive ? "LIVE" : "SAVED")} · {settings.storageMb} MB LIMIT</span>
+      {isLive && <span className="panel-status">TEMPORARY SESSION</span>}
     </motion.footer>
   </motion.div>;
 }
@@ -174,6 +172,7 @@ export default function Desktop({ files, onSaveFile, folderName, onRenameFolder,
 function WindowContent({ files, onSaveFile, folderName, win, folder, setFolder, open, note, setNote, save, saveState, saveError, isLive, fileText }: ContentProps) {
   if (win.file && Object.hasOwn(files, win.file)) return <SavedFileEditor name={win.file} initialText={files[win.file]} onSave={onSaveFile} isLive={isLive} />;
   if (win.file === "start-here.txt") return <div className="window-body"><h2>Welcome to your <span>bench.</span></h2><p>A tidy place to think, make, and leave breadcrumbs for your future self.</p><div className="rule" /><span className="sample">sample content / design study</span></div>;
+  if (win.kind === "game") return <Game />;
   if (win.kind === "browser") return <div className="window-body"><form className="browser-form" onSubmit={e => { e.preventDefault(); const q = (e.currentTarget.elements.namedItem("q") as HTMLInputElement).value.trim(); if (q) window.open(`https://duckduckgo.com/?q=${encodeURIComponent(q)}`, "_blank", "noopener"); }}><input name="q" aria-label="Search the web" placeholder="Search the web…" /><button>Search</button></form><div className="browser-hint">Search opens a real browser tab.</div><div className="bookmarks"><a className="bookmark" href="https://github.com" target="_blank" rel="noopener"><strong>Project 01 — sample</strong><small>Example link · opens externally</small></a><a className="bookmark" href="https://www.are.na" target="_blank" rel="noopener"><strong>Project 02 — sample</strong><small>Research board · opens externally</small></a></div></div>;
   if (win.kind === "files") return <div className="file-layout"><nav className="file-tree"><button className={folder === "Home" ? "active" : ""} onClick={() => setFolder("Home")}>Home</button><button className={folder === "Projects" ? "active" : ""} onClick={() => setFolder("Projects")}>{folderName}</button></nav><div className="file-content"><h3>{folder === "Projects" ? folderName : folder}</h3><p>Sample files in this local workspace.</p><div className="file-list">{(folder === "Home" ? ["start-here.txt", "experience.txt", "skills.txt", "notes.txt", ...Object.keys(files)] : projectFiles).map(f => <button key={f} onDoubleClick={() => open("editor", f)} onKeyDown={e => { if (e.key === "Enter") { e.preventDefault(); open("editor", f); } }}><FileText size={16} aria-hidden="true" />{f}</button>)}</div></div></div>;
   const editable = win.file === "notes.txt"; return <div className="window-body"><div className="editor-meta">plain text · {editable ? "editable" : "read only"} · sample content</div>{editable ? <><textarea value={note} onChange={e => setNote(e.target.value)} disabled={saveState === "saving"} aria-label="Notes" /><div className="editor-actions"><button className="btn primary" onClick={save} disabled={saveState === "saving"}>Save</button><span>{saveState === "saving" ? "Saving…" : saveState === "saved" ? (isLive ? "Saved for live session." : "Saved in this browser.") : saveState === "error" ? `Could not save: ${saveError}` : ""}</span></div></> : <><pre className="editor-copy">{fileText(win.file || "start-here.txt")}</pre><button className="download" onClick={() => { const url = URL.createObjectURL(new Blob([fileText(win.file || "start-here.txt")], { type: "text/plain" })); const a = document.createElement("a"); a.href = url; a.download = win.file || "note.txt"; a.click(); setTimeout(() => URL.revokeObjectURL(url), 1000); }}>Download</button></>}</div>;

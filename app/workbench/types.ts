@@ -1,19 +1,7 @@
-export type Wallpaper = "grid" | "work" | "clean";
-
-export type Settings = {
-  name: string;
-  wallpaper: Wallpaper;
-  storageMb: number;
-};
-
-export const DEFAULT_SETTINGS: Settings = {
-  name: "",
-  wallpaper: "grid",
-  storageMb: 25,
-};
+/** The most workspace data, in megabytes, that this app saves in the browser. */
+export const STORAGE_LIMIT_MB = 100;
 
 export type Workspace = {
-  settings: Settings;
   note: string;
   folderName?: string;
   files?: Record<string, string>;

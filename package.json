@@ -11,24 +11,31 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit && tsc --noEmit -p worker",
+    "worker:dev": "wrangler dev --config worker/wrangler.jsonc",
+    "test": "vitest run"
   },
   "dependencies": {
     "lucide-react": "^1.45.0",
     "motion": "^13.2.0",
     "next": "16.2.11",
     "react": "19.2.4",
-    "react-dom": "19.2.4"
+    "react-dom": "19.2.4",
+    "three": "0.187.0"
   },
   "devDependencies": {
+    "@cloudflare/workers-types": "^5.20261115.1",
     "@tailwindcss/postcss": "^4",
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
+    "@types/three": "^0.187.0",
     "babel-plugin-react-compiler": "1.0.0",
     "eslint": "^9",
     "eslint-config-next": "16.2.11",
     "tailwindcss": "^4",
-    "typescript": "^5"
+    "typescript": "^5",
+    "vitest": "^5.1.0",
+    "wrangler": "^4.162.0"
   }
 }

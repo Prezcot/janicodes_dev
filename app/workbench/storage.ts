@@ -1,11 +1,9 @@
-import { DEFAULT_SETTINGS, type Settings, type Wallpaper, type Workspace } from "./types";
+import { STORAGE_LIMIT_MB, type Workspace } from "./types";
 
 const DATABASE_NAME = "jani-os-workbench";
 const DATABASE_VERSION = 1;
 const STORE_NAME = "state";
 const WORKSPACE_KEY = "workspace";
-
-const wallpapers: readonly Wallpaper[] = [DEFAULT_SETTINGS.wallpaper, "work", "clean"];
 
 function getIndexedDb(): IDBFactory {
   const indexedDb = (globalThis as typeof globalThis & { indexedDB?: IDBFactory }).indexedDB;
@@ -50,36 +48,20 @@ function openDatabase(): Promise<IDBDatabase> {
   });
 }
 
-function isSettings(value: unknown): value is Settings {
-  if (!value || typeof value !== "object") return false;
-  const settings = value as Partial<Workspace["settings"]>;
-  return (
-    typeof settings.name === "string" &&
-    settings.name.length <= 40 &&
-    wallpapers.includes(settings.wallpaper as Wallpaper) &&
-    typeof settings.storageMb === "number" &&
-    Number.isFinite(settings.storageMb) &&
-    settings.storageMb >= 10 &&
-    settings.storageMb <= 100 &&
-    Number.isInteger(settings.storageMb) &&
-    settings.storageMb % 5 === 0
-  );
-}
-
 function isWorkspace(value: unknown): value is Workspace {
   if (!value || typeof value !== "object") return false;
   const workspace = value as Partial<Workspace>;
-  return (workspace.files === undefined || (workspace.files !== null && typeof workspace.files === "object" && !Array.isArray(workspace.files) && Object.entries(workspace.files).every(([name, content]) => name.length > 4 && name.length <= 80 && name.endsWith(".txt") && typeof content === "string"))) && isSettings(workspace.settings) && typeof workspace.note === "string" && (workspace.folderName === undefined || (typeof workspace.folderName === "string" && workspace.folderName.trim().length > 0 && workspace.folderName.length <= 80));
+  return (workspace.files === undefined || (workspace.files !== null && typeof workspace.files === "object" && !Array.isArray(workspace.files) && Object.entries(workspace.files).every(([name, content]) => name.length > 4 && name.length <= 80 && name.endsWith(".txt") && typeof content === "string"))) && typeof workspace.note === "string" && (workspace.folderName === undefined || (typeof workspace.folderName === "string" && workspace.folderName.trim().length > 0 && workspace.folderName.length <= 80));
 }
 
 function serializedWorkspace(workspace: Workspace): string {
-  if (!isWorkspace(workspace)) throw new Error("JANI//OS could not save the workspace because its settings are invalid.");
+  if (!isWorkspace(workspace)) throw new Error("JANI//OS could not save the workspace because its contents are invalid.");
   // Build a fresh object so no unrelated data is persisted.
-  const payload = JSON.stringify({ settings: { name: workspace.settings.name, wallpaper: workspace.settings.wallpaper, storageMb: workspace.settings.storageMb }, note: workspace.note, folderName: workspace.folderName, files: workspace.files });
+  const payload = JSON.stringify({ note: workspace.note, folderName: workspace.folderName, files: workspace.files });
   const bytes = new TextEncoder().encode(payload).byteLength;
-  const budget = workspace.settings.storageMb * 1_000_000;
+  const budget = STORAGE_LIMIT_MB * 1_000_000;
   if (bytes > budget) {
-    throw new Error(`This workspace is ${bytes.toLocaleString()} bytes, which exceeds its ${workspace.settings.storageMb} MB local storage limit.`);
+    throw new Error(`This workspace is ${bytes.toLocaleString()} bytes, which exceeds its ${STORAGE_LIMIT_MB} MB local storage limit.`);
   }
   return payload;
 }

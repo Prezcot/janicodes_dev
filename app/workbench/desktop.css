@@ -1,31 +1,14 @@
 
 .wb-root {
-  --paper: #e9dfc9;
-  --paper-hi: #f5eddd;
-  --ink: #252a20;
-  --muted: #68705b;
-  --olive: #3f4a35;
-  --rust: #a64e32;
-  --rust-dark: #713624;
   min-height: 100vh;
   height: 100vh;
   position: relative;
   overflow: hidden;
-  background-color: #dcd1b8;
-  background-image: linear-gradient(#3f4a3529 1px,transparent 1px),linear-gradient(90deg,#3f4a3529 1px,transparent 1px);
+  background-color: var(--desk);
+  background-image: linear-gradient(color-mix(in srgb, var(--chrome) 14%, transparent) 1px,transparent 1px),linear-gradient(90deg,color-mix(in srgb, var(--chrome) 14%, transparent) 1px,transparent 1px);
   background-size: 32px 32px;
   color: var(--ink);
   font: 11px ui-monospace,SFMono-Regular,Menlo,monospace
-}
-.wb-root.wall-work {
-  background-color: #ddc9a9;
-  background-image: linear-gradient(135deg,#a64e3229 25%,transparent 25% 50%,#3f4a351f 50% 75%,transparent 75%),linear-gradient(90deg,#71362424 1px,transparent 1px);
-  background-size: 88px 88px,44px 44px
-}
-.wb-root.wall-clean {
-  background-color: #cbd0b9;
-  background-image: linear-gradient(#3f4a351c 1px,transparent 1px),linear-gradient(90deg,#3f4a351c 1px,transparent 1px);
-  background-size: 56px 56px
 }
 .wb-root button,.wb-root input,.wb-root textarea {
   font: inherit
@@ -34,47 +17,13 @@
   cursor: pointer
 }
 .wb-root button:focus-visible,.wb-root input:focus-visible,.wb-root textarea:focus-visible {
-  outline: 3px solid var(--rust);
+  outline: 3px solid var(--focus);
   outline-offset: 3px
-}
-.wb-root .topbar {
-  position: absolute;
-  inset: 0 0 auto;
-  height: 42px;
-  border-bottom: 1px solid var(--olive);
-  background: #e9dfc9f2;
-  display: flex;
-  align-items: center;
-  padding: 0 17px;
-  z-index: 4
-}
-.wb-root .mini-brand {
-  color: var(--rust);
-  font-weight: 800;
-  letter-spacing: .09em
-}
-.wb-root .mini-brand span {
-  color: #713624
-}
-.wb-root .crumb {
-  margin-left: 24px;
-  color: var(--muted)
-}
-.wb-root .clock {
-  margin-left: auto;
-  color: var(--olive)
-}
-.wb-root .setup-link {
-  border: 0;
-  background: transparent;
-  text-decoration: underline;
-  color: var(--rust);
-  margin-left: 16px
 }
 .wb-root .desktop-icons {
   position: absolute;
   left: 26px;
-  top: 73px;
+  top: 31px;
   display: grid;
   gap: 19px;
   z-index: 1
@@ -95,14 +44,14 @@
   margin: 0 auto 7px;
   display: grid;
   place-items: center;
-  color: var(--olive);
-  border: 1px solid var(--olive);
-  background: #e9dfc9b8
+  color: var(--chrome);
+  border: 1px solid var(--chrome);
+  background: color-mix(in srgb, var(--surface-2) 72%, transparent)
 }
 .wb-root .welcome-note,.wb-root .app-window {
-  border: 1px solid var(--olive);
-  background: var(--paper-hi);
-  box-shadow: 7px 7px 0 #252a2033
+  border: 1px solid var(--chrome);
+  background: var(--surface);
+  box-shadow: 7px 7px 0 color-mix(in srgb, var(--ink) 20%, transparent)
 }
 .wb-root .welcome-note {
   position: absolute;
@@ -116,9 +65,9 @@
   padding: 0 10px;
   display: flex;
   align-items: center;
-  border-bottom: 1px solid var(--olive);
-  background: var(--olive);
-  color: var(--paper-hi);
+  border-bottom: 1px solid var(--chrome);
+  background: var(--chrome);
+  color:var(--chrome-ink);
   font-size: 11px
 }
 .wb-root .window-title {
@@ -132,8 +81,8 @@
   width: 20px;
   height: 20px;
   padding: 0;
-  border: 1px solid #f5eddd99;
-  color: var(--paper-hi);
+  border: 1px solid color-mix(in srgb, var(--chrome-ink) 60%, transparent);
+  color:var(--chrome-ink);
   background: transparent;
   display: grid;
   place-items: center;
@@ -155,7 +104,7 @@
   margin: 0 0 15px
 }
 .wb-root .window-body h2 span {
-  color: var(--rust)
+  color:var(--accent-strong)
 }
 .wb-root .window-body p {
   margin: 0 0 15px;
@@ -163,13 +112,13 @@
   color: var(--muted)
 }
 .wb-root .rule {
-  border-top: 1px solid #9a947d;
+  border-top: 1px solid var(--line);
   margin: 22px 0 16px
 }
 .wb-root .sample {
   display: inline-block;
-  color: var(--rust-dark);
-  border: 1px solid #c4876d;
+  color: var(--accent-strong);
+  border: 1px solid var(--line);
   padding: 3px 6px;
   font-size: 9px;
   letter-spacing: .08em;
@@ -181,9 +130,9 @@
   right: 0;
   bottom: 0;
   min-height: 45px;
-  border-top: 1px solid var(--olive);
-  background: #3f4a35f5;
-  color: var(--paper-hi);
+  border-top: 1px solid var(--chrome);
+  background: color-mix(in srgb, var(--chrome) 96%, transparent);
+  color:var(--chrome-ink);
   display: flex;
   align-items: center;
   padding: 7px 16px;
@@ -191,29 +140,23 @@
 }
 .wb-root .panel-brand {
   font-weight: 800;
-  color: #e19a77
-}
-.wb-root .panel-actions {
-  display: flex;
-  gap: 6px;
-  margin-left: 22px;
-  overflow: auto
+  color: var(--brand)
 }
 .wb-root .panel button {
-  border: 1px solid #f5eddd59;
-  background: #f5eddd14;
-  color: var(--paper-hi);
+  border: 1px solid color-mix(in srgb, var(--chrome-ink) 35%, transparent);
+  background: color-mix(in srgb, var(--chrome-ink) 8%, transparent);
+  color:var(--chrome-ink);
   height: 29px;
   padding: 0 9px;
   font-size: 10px;
   white-space: nowrap
 }
 .wb-root .panel button:hover {
-  background: var(--rust)
+  background: var(--chrome-hover)
 }
 .wb-root .panel-status {
   margin-left: auto;
-  color: #cbd2b4;
+  color: var(--chrome-muted);
   font-size: 10px;
   white-space: nowrap
 }
@@ -245,14 +188,15 @@
   margin: 0 0 18px
 }
 .wb-root .download,.wb-root .btn {
+  color: var(--ink);
   border: 1px solid var(--ink);
   background: transparent;
   padding: 8px 13px
 }
 .wb-root .btn.primary {
-  background: var(--rust);
-  border-color: var(--rust-dark);
-  color: #fff7e8;
+  background: var(--accent);
+  border-color: var(--accent-strong);
+  color: var(--accent-ink);
   font-weight: 700
 }
 .wb-root .editor-actions {
@@ -268,8 +212,8 @@
   width: 100%;
   min-height: 250px;
   padding: 14px;
-  border: 1px solid #9a947d;
-  background: #fffaf0;
+  border: 1px solid var(--field-line);
+  background: var(--surface);
   color: var(--ink);
   font: 14px/1.6 ui-monospace,monospace;
   resize: vertical
@@ -280,9 +224,9 @@
   min-height: 295px
 }
 .wb-root .file-tree {
-  border-right: 1px solid #9a947d;
+  border-right: 1px solid var(--line);
   padding: 15px 11px;
-  background: #e3d8c1
+  background: var(--surface-2)
 }
 .wb-root .file-tree button {
   display: block;
@@ -295,8 +239,8 @@
   padding: 9px 7px
 }
 .wb-root .file-tree button.active,.wb-root .file-tree button:hover {
-  background: var(--paper-hi);
-  color: var(--rust-dark)
+  background: var(--surface);
+  color: var(--accent-strong)
 }
 .wb-root .file-content {
   padding: 19px 21px
@@ -317,7 +261,7 @@
 }
 .wb-root .file-list button {
   border: 0;
-  border-bottom: 1px solid #c6bba3;
+  border-bottom: 1px solid var(--line);
   background: transparent;
   text-align: left;
   padding: 9px 4px;
@@ -325,7 +269,7 @@
   font-size: 11px
 }
 .wb-root .file-list button:hover {
-  color: var(--rust)
+  color:var(--accent-strong)
 }
 .wb-root .browser-form {
   display: flex;
@@ -334,20 +278,20 @@
 }
 .wb-root .browser-form input {
   flex: 1;
-  border: 1px solid #9a947d;
+  border: 1px solid var(--field-line);
   padding: 10px;
-  background: #fffaf0;
+  background: var(--surface);
   min-width: 0;
   color: var(--ink)
 }
 .wb-root .browser-form button {
-  border: 1px solid var(--rust-dark);
-  background: var(--rust);
-  color: #fff7e8;
+  border: 1px solid var(--accent-strong);
+  background: var(--accent);
+  color: var(--accent-ink);
   padding: 0 13px
 }
 .wb-root .browser-hint {
-  border-left: 3px solid var(--rust);
+  border-left: 3px solid var(--accent);
   padding: 8px 11px;
   color: var(--muted);
   font-size: 10px;
@@ -359,20 +303,20 @@
   gap: 9px
 }
 .wb-root .bookmark {
-  border: 1px solid #9a947d;
+  border: 1px solid var(--line);
   padding: 13px;
   color: var(--ink);
-  background: #eee5d3;
+  background: var(--surface-2);
   text-decoration: none
 }
 .wb-root .bookmark:hover {
-  border-color: var(--rust)
+  border-color: var(--accent)
 }
 .wb-root .bookmark strong {
   display: block;
   font: 18px Georgia,serif;
   margin-bottom: 5px;
-  color: var(--rust-dark)
+  color: var(--accent-strong)
 }
 .wb-root .bookmark small {
   color: var(--muted);
@@ -383,15 +327,9 @@
   min-height: 100vh;
   overflow: auto
 }
-.wb-root .crumb {
-  display: none
-}
-.wb-root .topbar {
-  padding: 0 10px
-}
 .wb-root .desktop-icons {
   left: 9px;
-  top: 62px;
+  top: 20px;
   gap: 11px
 }
 .wb-root .desktop-icon {
@@ -429,10 +367,6 @@
 .wb-root .panel-brand {
   display: none
 }
-.wb-root .panel-actions {
-  margin-left: 0;
-  gap: 4px
-}
 .wb-root .panel-status {
   font-size: 9px
 }}@media(prefers-reduced-motion:reduce){
@@ -446,8 +380,7 @@
 .wb-root .window-head { touch-action:none; user-select:none; cursor:grab; }
 .wb-root .window-title { overflow:hidden; text-overflow:ellipsis; white-space:nowrap; min-width:0; }
 .wb-root .window-controls { flex-shrink:0; }
-.wb-root .topbar,.wb-root .panel { z-index:100; }
-.wb-root .panel-actions { min-width:0; }
+.wb-root .panel { z-index:100; }
 .wb-root .panel-status { padding-left:12px; }
 .wb-root .editor-actions { flex-wrap:wrap; }
 .wb-root .app-window { display:flex; flex-direction:column; }
@@ -457,28 +390,26 @@
 .wb-root .editor-copy { overflow-wrap:anywhere; }
 @media(max-width:680px) {
   .wb-root { height:100dvh; overflow:hidden; }
-  .wb-root .desktop-icons { display:flex; flex-wrap:wrap; left:12px; right:12px; top:62px; gap:12px; }
+  .wb-root .desktop-icons { display:flex; flex-wrap:wrap; left:12px; right:12px; top:20px; gap:12px; }
   .wb-root .welcome-note { top:265px; max-height:calc(100dvh - 325px); overflow:auto; }
   .wb-root .panel-status { display:none; }
-  .wb-root .panel-actions { width:100%; }
-  .wb-root .app-window.maximized { top:42px!important; left:0!important; width:100%!important; bottom:53px!important; }
-  .wb-root .clock { overflow:hidden; text-overflow:ellipsis; white-space:nowrap; max-width:50%; }
+  .wb-root .app-window.maximized { top:0!important; left:0!important; width:100%!important; bottom:53px!important; }
 }
 
 .wb-root .app-window.welcome-note:not(.maximized) { width:min(525px,calc(100% - 36px)); }
 @media(max-width:680px) { .wb-root .app-window.welcome-note:not(.maximized) { width:calc(100% - 16px); } }
 
 /* Launchers stay available; every open window has its own task. */
-.wb-root .panel-launchers { display:flex; gap:4px; flex-shrink:0; margin-left:16px; padding-right:12px; border-right:1px solid #f5eddd40; }
+.wb-root .panel-launchers { display:flex; gap:4px; flex-shrink:0; margin-left:16px; padding-right:12px; border-right:1px solid color-mix(in srgb, var(--chrome-ink) 25%, transparent); }
 .wb-root .panel-launchers button { width:30px; padding:0; display:grid; place-items:center; }
 .wb-root .panel-tasks { display:flex; gap:5px; flex:1; min-width:0; margin-left:12px; overflow-x:auto; scrollbar-width:thin; }
-.wb-root .panel .task-button { display:flex; align-items:center; gap:8px; flex:0 1 170px; min-width:105px; max-width:200px; border-bottom:2px solid #c5cbb6; text-align:left; }
+.wb-root .panel .task-button { display:flex; align-items:center; gap:8px; flex:0 1 170px; min-width:105px; max-width:200px; border-bottom:2px solid var(--line); text-align:left; }
 .wb-root .task-label { min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
 .wb-root .task-icon { flex-shrink:0; display:flex; align-items:center; }
 .wb-root .file-list button { display:flex; align-items:center; gap:8px; }
 .wb-root .file-list button svg { flex-shrink:0; }
-.wb-root .panel .task-button.is-active { background:var(--paper-hi); color:var(--ink); border-color:var(--paper-hi); border-bottom-color:var(--rust); box-shadow:inset 0 0 0 1px #3f4a3540; }
-.wb-root .panel .task-button.is-minimized { color:#cbd2b4; background:transparent; border-bottom-color:transparent; }
+.wb-root .panel .task-button.is-active { background:var(--surface); color:var(--ink); border-color:var(--surface); border-bottom-color:var(--accent); box-shadow:inset 0 0 0 1px color-mix(in srgb, var(--chrome) 25%, transparent); }
+.wb-root .panel .task-button.is-minimized { color:var(--chrome-muted); background:transparent; border-bottom-color:color-mix(in srgb, var(--chrome-ink) 35%, transparent); }
 @media(max-width:680px) {
   .wb-root .panel-launchers { margin-left:0; padding-right:6px; gap:3px; }
   .wb-root .panel-tasks { margin-left:7px; }
@@ -487,22 +418,22 @@
 
 .wb-root .app-window[data-minimized] { pointer-events:none; }
 .wb-root .app-window { transition:box-shadow 100ms ease; }
-.wb-root .app-window[data-dragging] { box-shadow:12px 18px 24px #252a2040; }
+.wb-root .app-window[data-dragging] { box-shadow:12px 18px 24px color-mix(in srgb, var(--ink) 25%, transparent); }
 .wb-root .app-window[data-dragging] .window-head { cursor:grabbing; }
 .wb-root .desktop-icon .icon-art { transition:background-color 120ms ease,box-shadow 120ms ease; }
-.wb-root .desktop-icon:hover .icon-art { background:var(--paper-hi); box-shadow:2px 3px 0 #252a2020; }
+.wb-root .desktop-icon:hover .icon-art { background:var(--surface); box-shadow:2px 3px 0 color-mix(in srgb, var(--ink) 13%, transparent); }
 .wb-root .panel button,.wb-root .window-controls button { transition:background-color 120ms ease,color 120ms ease; }
-.wb-root .window-controls button:active { background:#f5eddd35; }
+.wb-root .window-controls button:active { background:color-mix(in srgb, var(--chrome-ink) 21%, transparent); }
 
 .wb-root .desktop-item { width:78px; position:relative; }
-.wb-root .desktop-icon.selected { background:#f5eddd80; outline:1px solid var(--olive); }
-.wb-root .rename-input { width:100%; min-width:0; padding:3px; font:11px ui-monospace,monospace; color:var(--ink); background:var(--paper-hi); border:1px solid var(--olive); text-align:center; }
-.wb-root .rename-error { display:block; width:180px; padding:6px; background:var(--paper-hi); color:var(--rust-dark); font-size:11px; }
+.wb-root .desktop-icon.selected { background:color-mix(in srgb, var(--surface) 50%, transparent); outline:1px solid var(--chrome); }
+.wb-root .rename-input { width:100%; min-width:0; padding:3px; font:11px ui-monospace,monospace; color:var(--ink); background:var(--surface); border:1px solid var(--chrome); text-align:center; }
+.wb-root .rename-error { display:block; width:180px; padding:6px; background:var(--surface); color:var(--accent-strong); font-size:11px; }
 .wb-root .menu-dismiss { position:absolute; inset:0; z-index:200; }
-.wb-root .desktop-menu { position:absolute; z-index:201; width:145px; padding:4px; background:var(--paper-hi); border:1px solid var(--olive); box-shadow:4px 4px 0 #252a2033; }
+.wb-root .desktop-menu { position:absolute; z-index:201; width:145px; padding:4px; background:var(--surface); border:1px solid var(--chrome); box-shadow:4px 4px 0 color-mix(in srgb, var(--ink) 20%, transparent); }
 .wb-root .desktop-menu button { display:flex; justify-content:space-between; width:100%; padding:8px; border:0; color:var(--ink); background:transparent; }
-.wb-root .desktop-menu button:hover,.wb-root .desktop-menu button:focus-visible { background:var(--olive); color:var(--paper-hi); }
-.wb-root .file-list button:focus { background:#3f4a3520; outline:1px solid var(--olive); }
+.wb-root .desktop-menu button:hover,.wb-root .desktop-menu button:focus-visible { background:var(--chrome); color:var(--chrome-ink); }
+.wb-root .file-list button:focus { background:color-mix(in srgb, var(--chrome) 13%, transparent); outline:1px solid var(--chrome); }
 @media(max-width:680px) { .wb-root .desktop-item { width:65px; } }
 
 .wb-root .window-head { flex-shrink:0; }
@@ -523,10 +454,15 @@
 .wb-root .app-window[data-sized]:not(.maximized) { left:var(--window-x)!important; top:var(--window-y)!important; width:var(--window-width)!important; }
 
 .wb-root .desktop-menu { width:200px; }
-.wb-root .create-overlay { position:absolute; inset:0; z-index:250; display:grid; place-items:center; background:#252a2060; }
-.wb-root .create-dialog { width:min(420px,calc(100% - 32px)); padding:24px; background:var(--paper-hi); border:1px solid var(--olive); box-shadow:7px 7px 0 #252a2033; }
+.wb-root .create-overlay { position:absolute; inset:0; z-index:250; display:grid; place-items:center; background:color-mix(in srgb, var(--ink) 38%, transparent); }
+.wb-root .create-dialog { width:min(420px,calc(100% - 32px)); padding:24px; background:var(--surface); border:1px solid var(--chrome); box-shadow:7px 7px 0 color-mix(in srgb, var(--ink) 20%, transparent); }
 .wb-root .create-dialog h2 { margin:0 0 20px; font:26px Georgia,serif; }
-.wb-root .create-dialog input { width:100%; margin-top:8px; padding:10px; background:var(--paper); border:1px solid var(--olive); }
+.wb-root .create-dialog input { width:100%; margin-top:8px; padding:10px; color:var(--ink); background:var(--surface); border:1px solid var(--chrome); }
 .wb-root .create-dialog p { font-size:12px; line-height:1.5; }
-.wb-root .desktop-icons { max-height:calc(100% - 120px); grid-auto-flow:column; grid-template-rows:repeat(5,auto); }
+.wb-root .desktop-icons { max-height:calc(100% - 120px); grid-auto-flow:column; grid-template-rows:repeat(6,auto); }
 .wb-root .desktop-icon { overflow-wrap:anywhere; }
+
+/* Game window: wide by default, and the game fills whatever height the window has. */
+.wb-root .app-window.game-window { display:flex; flex-direction:column; width:min(960px,calc(100% - 140px)); }
+@media(max-width:680px) { .wb-root .app-window.game-window:not(.maximized) { width:calc(100% - 16px); } }
+.wb-root .window-head button:focus-visible,.wb-root .panel button:focus-visible { outline-color:var(--focus-on-chrome); }

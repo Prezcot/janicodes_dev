@@ -8,7 +8,7 @@ import type { CSSProperties, PointerEvent, ReactNode, RefObject } from "react";
 export type Win = {
   id: string;
   title: string;
-  kind: "editor" | "files" | "browser";
+  kind: "editor" | "files" | "browser" | "game";
   file?: string;
   minimized?: boolean;
   maximized?: boolean;
@@ -105,9 +105,9 @@ export default function AppWindow({ win, z, taskRefs, onFocus, onClose, onMin, o
     const boundRight = parent.clientWidth - 8;
     const boundBottom = parent.clientHeight - (panel?.offsetHeight ?? 45) - 8;
     const width = Math.min(node.offsetWidth, boundRight - 8);
-    const height = Math.min(node.offsetHeight, boundBottom - 45);
+    const height = Math.min(node.offsetHeight, boundBottom - 8);
     const left = clamp(node.offsetLeft, 8, boundRight - width);
-    const top = clamp(node.offsetTop, 45, boundBottom - height);
+    const top = clamp(node.offsetTop, 8, boundBottom - height);
     resize.current = { edge, pointerX: event.clientX, pointerY: event.clientY, left, top, right: left + width, bottom: top + height, minWidth: Math.min(300, width), minHeight: Math.min(180, height), boundRight, boundBottom };
     setPosition({ x: left, y: top });
     setSize({ width, height });
@@ -122,7 +122,7 @@ export default function AppWindow({ win, z, taskRefs, onFocus, onClose, onMin, o
       let { left, right, top, bottom } = resizing;
       if (resizing.edge.includes("w")) left = clamp(left + dx, 8, right - resizing.minWidth);
       if (resizing.edge.includes("e")) right = clamp(right + dx, left + resizing.minWidth, resizing.boundRight);
-      if (resizing.edge.includes("n")) top = clamp(top + dy, 45, bottom - resizing.minHeight);
+      if (resizing.edge.includes("n")) top = clamp(top + dy, 8, bottom - resizing.minHeight);
       if (resizing.edge.includes("s")) bottom = clamp(bottom + dy, top + resizing.minHeight, resizing.boundBottom);
       setPosition({ x: left, y: top });
       setSize({ width: right - left, height: bottom - top });
@@ -132,7 +132,7 @@ export default function AppWindow({ win, z, taskRefs, onFocus, onClose, onMin, o
     const rect = event.currentTarget.getBoundingClientRect();
     setPosition({
       x: Math.max(8, Math.min(window.innerWidth - rect.width - 8, event.clientX - drag.current.x)),
-      y: Math.max(45, Math.min(window.innerHeight - rect.height - 55, event.clientY - drag.current.y)),
+      y: Math.max(8, Math.min(window.innerHeight - rect.height - 55, event.clientY - drag.current.y)),
     });
   }
 
@@ -147,14 +147,14 @@ export default function AppWindow({ win, z, taskRefs, onFocus, onClose, onMin, o
     data-sized={size ? true : undefined}
     data-minimized={win.minimized || undefined}
     data-dragging={dragging || undefined}
-    className={`app-window ${win.file === "start-here.txt" ? "welcome-note" : ""} ${win.maximized ? "maximized" : ""}`}
+    className={`app-window ${win.file === "start-here.txt" ? "welcome-note" : ""} ${win.kind === "game" ? "game-window" : ""} ${win.maximized ? "maximized" : ""}`}
     layout={!reduced}
     layoutDependency={Boolean(win.maximized)}
     initial={reduced ? false : { opacity: 0, scaleX: 0.97, scaleY: 0.97, y: 6 }}
     animate={controls}
     exit={{ opacity: 0, scaleX: reduced ? 1 : 0.97, scaleY: reduced ? 1 : 0.97, transition: { duration: reduced ? 0 : 0.14, ease } }}
     transition={{ layout: { duration: reduced ? 0 : 0.24, ease } }}
-    style={{ "--window-x": `${position.x}px`, "--window-y": `${position.y}px`, "--window-width": size ? `${size.width}px` : undefined, left: win.maximized ? 0 : position.x, top: win.maximized ? 42 : position.y, width: !win.maximized && size ? size.width : undefined, height: !win.maximized && size ? size.height : undefined, maxHeight: !win.maximized && size ? "none" : undefined, zIndex: z, transformOrigin: "0 0" } as CSSProperties}
+    style={{ "--window-x": `${position.x}px`, "--window-y": `${position.y}px`, "--window-width": size ? `${size.width}px` : undefined, left: win.maximized ? 0 : position.x, top: win.maximized ? 0 : position.y, width: !win.maximized && size ? size.width : undefined, height: !win.maximized && size ? size.height : undefined, maxHeight: !win.maximized && size ? "none" : undefined, zIndex: z, transformOrigin: "0 0" } as CSSProperties}
     onPointerDown={onFocus}
     onPointerMove={move}
     onPointerUp={stopDrag}

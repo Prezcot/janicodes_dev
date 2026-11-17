@@ -43,3 +43,6 @@ next-env.d.ts
 
 # local browser QA artifacts
 /.playwright-mcp/
+
+# cloudflare worker local state
+.wrangler

@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import "./globals.css";
+import { cssVariables } from "../theme/theme";
 
 export const metadata: Metadata = {
   title: "JANI//OS — Workbench",
@@ -12,7 +13,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
+    <html lang="en" style={cssVariables as React.CSSProperties}>
       <body>{children}</body>
     </html>
   );
