@@ -63,11 +63,16 @@ function Lobby({ notice, options, onOptions, onPlay }: { notice: string; options
   useEffect(() => {
     if (!SERVER) return;
     let active = true;
-    const refresh = () => fetch(`${SERVER}/rooms`).then(r => r.json()).then((list: RoomInfo[]) => { if (active) { setRooms(list); setNow(Date.now()); setError(""); } })
-      .catch(() => { if (active) setError("The game server cannot be reached."); });
-    void refresh();
+    // A hidden tab does not ask for the room list. It asks again as soon as it shows.
+    const refresh = () => {
+      if (document.hidden) return;
+      fetch(`${SERVER}/rooms`).then(r => r.json()).then((list: RoomInfo[]) => { if (active) { setRooms(list); setNow(Date.now()); setError(""); } })
+        .catch(() => { if (active) setError("The game server cannot be reached."); });
+    };
+    refresh();
     const timer = setInterval(refresh, 3000);
-    return () => { active = false; clearInterval(timer); };
+    document.addEventListener("visibilitychange", refresh);
+    return () => { active = false; clearInterval(timer); document.removeEventListener("visibilitychange", refresh); };
   }, []);
 
   const enter = (code: string) => {
