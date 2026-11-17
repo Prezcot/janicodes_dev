@@ -6,6 +6,7 @@ import { MAX_ROOMS, type RoomInfo } from "../net/protocol";
 import { connectRoom, type CloseReason } from "../net/remote";
 import { randomName, SPLIT_LEVEL, TUNING } from "../sim";
 import { startGame, type Hud, type Options, type Score } from "./engine";
+import { FigurePreview } from "./FigurePreview";
 import { theme } from "../../theme/theme";
 import "./game.css";
 
@@ -83,37 +84,60 @@ function Lobby({ notice, options, onOptions, onPlay }: { notice: string; options
     } catch { setError("The game server cannot be reached."); }
   };
 
+  const taken = rooms?.some(room => room.colours.includes(colour)) ?? false;
   return <div className="fps-lobby">
-    <h2>Paper Arena</h2>
-    <div className="fps-profile">
-      <label>Name<input value={name} maxLength={TUNING.nameLength} placeholder="Leave empty for a random name" onChange={e => setName(e.target.value)} /></label>
-      <div role="radiogroup" aria-label="Colour" className="fps-swatches">
-        {theme.players.map((p, i) => <button key={i} role="radio" aria-checked={colour === i} aria-label={p.name} title={p.name} style={{ background: p.colour }} onClick={() => setColour(i)} />)}
+    <header>
+      <h2>Paper Arena</h2>
+      <p>A free-for-all pistol shooter with paper players.</p>
+    </header>
+    {(notice || error) && <p className="fps-notice" role="alert">{error || notice}</p>}
+    <div className="fps-lobby-grid">
+      <section className="fps-sheet fps-player">
+        <h3>Your player</h3>
+        <FigurePreview colour={colour} />
+        <div className="fps-fields">
+          <label>Name (optional)<input value={name} maxLength={TUNING.nameLength} onChange={e => setName(e.target.value)} /><small>Random name if empty.</small></label>
+          <div className="fps-colour">
+            <span>Colour: {theme.players[colour].name}</span>
+            <div role="radiogroup" aria-label="Colour" className="fps-swatches">
+              {theme.players.map((p, i) => <button key={i} role="radio" aria-checked={colour === i} aria-label={p.name} title={p.name} style={{ background: p.colour }} onClick={() => setColour(i)} />)}
+            </div>
+          </div>
+          <div className="fps-settings"><h3>Settings</h3><Settings options={options} onChange={onOptions} /></div>
+        </div>
+      </section>
+      <div className="fps-side">
+        <section className="fps-sheet">
+          <h3>{SERVER ? "Rooms" : "Play"}</h3>
+          {SERVER ? <>
+            <div className="fps-rooms">
+              {rooms === null ? !error && <p>Loading rooms…</p> : rooms.length === 0 ? <p><strong>No rooms open.</strong> Create the first room or practise alone.</p> : rooms.map(room => {
+                const secondsLeft = room.endsAt === null ? null : Math.max(0, Math.round((room.endsAt - now) / 1000));
+                const full = room.players >= TUNING.maxPlayers, ending = secondsLeft !== null && secondsLeft <= TUNING.joinCutoff, mine = room.colours.includes(colour);
+                return <div key={room.code} className="fps-room">
+                  <div><strong>{room.name}</strong><span>{room.players} of {TUNING.maxPlayers} players · {secondsLeft === null ? "not started" : `${clock(secondsLeft)} left`}</span></div>
+                  <button className="btn primary" disabled={full || ending || mine} onClick={() => enter(room.code)}>{full ? "Full" : ending ? "Ending" : mine ? "Colour taken" : "Join"}</button>
+                </div>;
+              })}
+            </div>
+            {taken && <p>Your colour is taken in some rooms. Pick another colour to join them.</p>}
+            <div className="fps-actions">
+              <button className="btn primary" disabled={(rooms?.length ?? 0) >= MAX_ROOMS} onClick={() => void create()}>Create room</button>
+              <button className="btn" onClick={() => enter("")}>Practice alone</button>
+            </div>
+            {(rooms?.length ?? 0) >= MAX_ROOMS && <p>{MAX_ROOMS} rooms are open. Join one of them.</p>}
+          </> : <>
+            <p>Multiplayer is not set up on this site yet.</p>
+            <div className="fps-actions"><button className="btn primary" onClick={() => enter("")}>Practice alone</button></div>
+          </>}
+        </section>
+        <footer>
+          <h3>Controls</h3>
+          <p>WASD move · Mouse aim · Left click fire · R reload</p>
+          <p>Space jump · Left Shift crouch · Tab scores · Esc menu</p>
+        </footer>
       </div>
     </div>
-    <div className="fps-settings"><Settings options={options} onChange={onOptions} /></div>
-    {(notice || error) && <p className="fps-notice" role="alert">{error || notice}</p>}
-    {SERVER ? <>
-      <div className="fps-rooms">
-        {rooms === null ? <p>Loading rooms…</p> : rooms.length === 0 ? <p>No rooms are open. Create the first one.</p> : rooms.map(room => {
-          const secondsLeft = room.endsAt === null ? null : Math.max(0, Math.round((room.endsAt - now) / 1000));
-          const full = room.players >= TUNING.maxPlayers, ending = secondsLeft !== null && secondsLeft <= TUNING.joinCutoff, taken = room.colours.includes(colour);
-          return <div key={room.code} className="fps-room">
-            <strong>{room.name}</strong>
-            <span>{room.players} of {TUNING.maxPlayers}</span>
-            <span>{secondsLeft === null ? "not started" : `${clock(secondsLeft)} left`}</span>
-            <button className="btn primary" disabled={full || ending || taken} onClick={() => enter(room.code)}>{full ? "Full" : ending ? "Ending" : taken ? "Colour taken" : "Join"}</button>
-          </div>;
-        })}
-      </div>
-      <div className="fps-actions">
-        <button className="btn primary" disabled={(rooms?.length ?? 0) >= MAX_ROOMS} onClick={() => void create()}>Create room</button>
-        <button className="btn" onClick={() => enter("")}>Practice alone</button>
-      </div>
-    </> : <div className="fps-actions">
-      <button className="btn primary" onClick={() => enter("")}>Practice alone</button>
-      <span>Multiplayer is not set up on this site yet.</span>
-    </div>}
   </div>;
 }
 

@@ -31,8 +31,6 @@
 .fps-menu { margin-top: 12px; display: grid; gap: 10px; min-width: 250px; text-align: left; }
 .fps-menu label { display: grid; gap: 4px; }
 .fps-root input[type=range] { accent-color: var(--accent); width: 100%; }
-.fps-settings { display: flex; flex-wrap: wrap; gap: 14px 22px; }
-.fps-settings label { display: grid; gap: 4px; width: 250px; }
 .fps-scores, .fps-final { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); min-width: 300px; }
 .fps-final { text-align: center; display: grid; gap: 8px; }
 .fps-final h3 { margin: 0; font-size: 16px; }
@@ -44,20 +42,49 @@
 .fps-table i { display: inline-block; width: 10px; height: 10px; margin-right: 7px; border: 1px solid var(--ink); vertical-align: -1px; }
 .fps-table tr.left td { color: var(--muted); }
 .fps-table em { font-style: normal; color: var(--accent-strong); }
-.fps-lobby { position: absolute; inset: 0; overflow: auto; padding: 20px 24px; display: grid; gap: 14px; align-content: start; user-select: text; }
-.fps-lobby h2 { margin: 0; font-size: 22px; color: var(--chrome); }
-.fps-profile { display: flex; flex-wrap: wrap; gap: 14px 22px; align-items: end; }
-.fps-profile label { display: grid; gap: 4px; }
-.fps-profile input { width: 250px; padding: 6px 8px; border: 1px solid var(--chrome); background: var(--surface); color: inherit; font: inherit; }
-.fps-swatches { display: flex; gap: 6px; }
-.fps-swatches button { width: 26px; height: 26px; border: 2px solid var(--ink); padding: 0; cursor: pointer; }
-.fps-swatches button[aria-checked=true] { outline: 3px solid var(--focus); outline-offset: 2px; }
-.fps-notice { margin: 0; color: var(--accent-strong); }
-.fps-rooms { display: grid; gap: 6px; }
-.fps-rooms p { margin: 0; color: var(--muted); }
-.fps-room { display: grid; grid-template-columns: 1fr 70px 110px 110px; gap: 10px; align-items: center; padding: 8px 10px; border: 1px solid var(--chrome); background: var(--surface); }
+/* The lobby: a title on the desk, then two paper sheets, "Your player" and "Rooms", then the key hints. */
+.fps-root { container-type: inline-size; }
+.fps-lobby { position: absolute; inset: 0; overflow: auto; padding: 24px; display: grid; gap: 16px; align-content: start; user-select: text; font-size: 12px; line-height: 18px; }
+.fps-lobby h2 { margin: 0; font-size: 24px; line-height: 28px; color: var(--ink); }
+.fps-lobby h3 { margin: 0; font-size: 13px; }
+.fps-lobby p { margin: 0; color: var(--muted); }
+.fps-lobby strong { color: var(--ink); }
+.fps-notice { padding: 8px 12px; border: 1px solid var(--accent-strong); background: var(--surface); }
+.fps-lobby .fps-notice { color: var(--accent-strong); }
+.fps-lobby-grid { display: grid; grid-template-columns: 400px minmax(0, 1fr); gap: 16px; align-items: start; }
+.fps-sheet, .fps-fields, .fps-side { display: grid; gap: 16px; min-width: 0; align-content: start; }
+.fps-sheet { padding: 16px; border: 1px solid var(--chrome); background: var(--surface); }
+/* The player sheet: the figure stands on the left, and the fields are on the right. */
+.fps-player { grid-template-columns: 130px minmax(0, 1fr); }
+.fps-player > h3 { grid-column: 1 / -1; }
+.fps-figure { display: block; width: 100%; height: 100%; min-height: 170px; border: 1px solid var(--line); background: var(--surface-2); }
+.fps-lobby label, .fps-colour { display: grid; gap: 6px; margin: 0; font-size: 12px; letter-spacing: 0; text-transform: none; color: var(--ink); }
+.fps-lobby label > span { display: flex; justify-content: space-between; }
+.fps-lobby small { font-size: 12px; color: var(--muted); }
+.fps-sheet input:not([type=range]) { width: 100%; min-height: 34px; padding: 0 8px; border: 1px solid var(--field-line); background: var(--surface-2); color: inherit; font: inherit; }
+.fps-swatches { display: flex; flex-wrap: wrap; gap: 5px; }
+.fps-swatches button { width: 22px; height: 22px; border: 2px solid var(--ink); padding: 0; cursor: pointer; }
+.fps-swatches button[aria-checked=true] { outline: 2px solid var(--ink); outline-offset: 2px; }
+.fps-settings { display: grid; gap: 12px; padding-top: 16px; border-top: 1px solid var(--line); }
+.fps-lobby input[type=range] { height: 24px; margin: 0; }
+.fps-rooms { display: grid; }
+.fps-room { display: grid; grid-template-columns: minmax(0, 1fr) 112px; gap: 12px; align-items: center; padding: 12px 0; border-bottom: 1px solid var(--line); }
+.fps-room:first-child { padding-top: 0; }
+.fps-room > div { display: grid; gap: 4px; overflow-wrap: anywhere; }
+.fps-room span { color: var(--muted); }
 .fps-actions { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
 .fps-root .btn { padding: 5px 11px; border: 1px solid var(--chrome); background: var(--surface); color: var(--ink); font: inherit; cursor: pointer; }
 .fps-root .btn.primary { background: var(--chrome); color: var(--chrome-ink); }
 .fps-root .btn:disabled { opacity: .5; cursor: default; }
 .fps-root button:focus-visible, .fps-root input:focus-visible { outline: 3px solid var(--focus); outline-offset: 2px; }
+/* Lobby buttons and the narrow lobby. These follow the shared button rules above, so they win over them. */
+.fps-lobby .btn { min-height: 34px; padding: 0 12px; }
+.fps-lobby .btn.primary:hover:enabled { background: var(--chrome-hover); }
+.fps-lobby .btn:not(.primary):hover { background: var(--surface-2); }
+.fps-lobby .btn:disabled { opacity: 1; border-color: var(--field-line); background: var(--surface-2); color: var(--muted); }
+@container (max-width: 640px) {
+  .fps-lobby { padding: 12px; }
+  .fps-lobby-grid, .fps-room, .fps-player { grid-template-columns: minmax(0, 1fr); }
+  .fps-figure { height: 170px; }
+  .fps-lobby .btn { width: 100%; }
+}

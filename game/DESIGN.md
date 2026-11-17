@@ -49,6 +49,7 @@ The single record of what the game is, what is built, and what is verified. Upda
 - Sounds made in the browser: shot, empty click, reload, hit, death, and other players' footsteps within about 15 metres.
 - Keys: WASD, Space, Left Shift, R, left click, Tab, and Esc for the game menu.
 - Settings: mouse sensitivity and volume. They are in the lobby, and in the game menu that shows when the mouse is free after play has started. The first screen of a match shows only "Click to play" and the key hints. The match does not pause while the menu is open.
+- Lobby: "Your player" on the left, with a preview of the paper figure in the chosen colour, the name, the colour, and the settings. Rooms and the key hints are on the right. In a narrow window the lobby is one column. The figure sways, and at random times it hops and spins, dances in a crouch, falls flat, or wobbles. A new colour arrives with a hop and a spin. The figure stays still when the system asks for reduced motion.
 
 **Hosting and cost**
 - The site stays on Vercel. Multiplayer runs on Cloudflare Durable Objects on the Workers Free plan: one object per room, plus one for the room list.
@@ -63,7 +64,8 @@ The single record of what the game is, what is built, and what is verified. Upda
 - `game/net/`: `MatchConnection`, the seam between the client and wherever the match runs. `local.ts` runs a match in the tab. `remote.ts` plays in a room on the server, with prediction. `protocol.ts` holds the message types.
 - `game/server/room.ts`: one room's logic, with no Cloudflare code, so it is tested in Node.
 - `worker/`: the Cloudflare Worker. `GameRoom` adds sockets, a timer, and storage around `room.ts`. `Lobby` is the room list.
-- `game/client/`: the three.js view, input, sound, room list, and screen display.
+- `game/client/`: the three.js view, input, sound, room list, and screen display. `FigurePreview.tsx` draws the lobby figure with its own small renderer.
+- `app/favicon.ico`, `app/icon.png`, `app/apple-icon.png`: the site icon, a paper pointer. The source drawing is `mockups/icons/pointer.svg`. The phone icon has a cream background.
 - `app/workbench/`: the game is the `game` window kind.
 - `theme/theme.ts`: the colour system. Every colour of the desktop and the game is defined there, with the eight player colours and their names. `app/layout.tsx` turns the desktop colours into CSS variables. The style files use only those variables.
 
@@ -102,7 +104,9 @@ Not done:
   - Three body shots killed the browser player: health went 66, 32, 0, "Killed by" showed, and the respawn worked.
 - Colours, live on one machine, 2026-11-17, after the move to Sea glass: desktop, text editor, file manager, browser window, new file dialog, game lobby, room list, pause menu, scoreboard with four players, kill feed, and "Killed by" drew in the theme colours with no page error. A script read the colour of every text and control in nine screens and found none outside the theme.
 - Live on Cloudflare and the production site, 2026-11-17: the Worker refused requests with no origin and from another site with 403, for the room list, room creation, and the socket. From `www.janicodes.dev`, two browser players created and joined a room, each received 30 updates per second, the scoreboard listed both, and the room left the list after both left.
+- Lobby and site icon, live on one machine, 2026-11-17, in a browser with no window: the lobby drew with no page error, the figure changed colour with the swatch, and 40 pictures over 9 seconds showed the hop and spin, the crouch dance, and the wobble. The page served the three icon links, and each one loaded.
 - Not verified:
+  - The fall flat gag, the lobby in a narrow window, and the site icon in a real browser tab and on a phone.
   - The final kill count screen in Sea glass, hover states, and narrow screens.
   - Mouse lock with a real mouse. The automated browser cannot lock the mouse, so the lock was simulated.
   - Sound. The automated browser has no audio output.
