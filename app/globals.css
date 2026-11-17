@@ -11,8 +11,8 @@
     .brand span { color:var(--brand); }
     .actions { display:flex; gap:12px; flex-wrap:wrap; }
     .btn { border:1px solid var(--ink); background:transparent; color:var(--ink); min-height:43px; padding:0 19px; font-weight:700; font-size:12px; letter-spacing:.02em; }
-    .btn.primary { background:var(--accent); color:var(--accent-ink); border-color:var(--accent-strong); box-shadow:4px 4px 0 var(--accent-strong); }
-    .btn.primary:active { transform:translate(2px,2px); box-shadow:2px 2px 0 var(--accent-strong); }
+    .btn.primary { background:var(--accent); color:var(--accent-ink); border-color:var(--accent-strong); }
+    .btn.primary:active { transform:translate(2px,2px); }
     label { display:block; font-size:11px; color:var(--muted); text-transform:uppercase; letter-spacing:.08em; margin-bottom:7px; }
     input[type=text] { width:100%; border:1px solid var(--field-line); background:var(--surface); padding:12px; color:var(--ink); }
     input[type=range] { width:100%; accent-color:var(--accent); margin:16px 0 8px; }
