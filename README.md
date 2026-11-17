@@ -1,6 +1,6 @@
 # JANI//OS — Workbench
 
-A personal portfolio that opens onto a paper-style desktop in the "Sea glass" colours: cream paper, an aqua desk, teal ink, and coral. All colours are defined in `theme/theme.ts`. Built with Next.js 16, React 19 and TypeScript, based on the approved Workbench study in `mockups/02-workbench.html`.
+A personal portfolio that opens onto a paper-style desktop in the "Sea glass" colours: cream paper, an aqua desk, teal ink, and coral. All colours are defined in `theme/theme.ts`. Built with Next.js 16, React 19 and TypeScript.
 
 ## Run locally
 
@@ -34,10 +34,8 @@ Portfolio details are currently labeled sample content. Replace the text in `app
 - `app/page.tsx`: startup, saved or temporary session state, ordered writes.
 - `app/workbench/desktop.tsx` and `desktop.css`: desktop and applications.
 - `app/workbench/app-window.tsx`: window movement, resizing and animation.
-- `public/studies/window-motion.html`: standalone movement comparison.
 - `app/workbench/storage.ts`: validated IndexedDB reads/writes and byte-budget checks.
 - `app/workbench/types.ts`: the workspace type and the storage limit.
-- `mockups/`: five standalone design explorations, comparison gallery and original brief.
 
 ## Validation
 
