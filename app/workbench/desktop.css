@@ -381,6 +381,8 @@
 .wb-root .window-controls { flex-shrink:0; }
 .wb-root .panel { z-index:100; }
 .wb-root .panel-status { padding-left:12px; }
+.wb-root .panel-clock { display:grid; justify-items:end; flex-shrink:0; margin-left:12px; padding-left:12px; border-left:1px solid color-mix(in srgb, var(--chrome-ink) 25%, transparent); font-size:12px; line-height:1.25; color:var(--chrome-muted); white-space:nowrap; font-variant-numeric:tabular-nums; }
+.wb-root .panel-clock strong { font-size:13px; color:var(--chrome-ink); }
 .wb-root .editor-actions { flex-wrap:wrap; }
 .wb-root .app-window { display:flex; flex-direction:column; }
 .wb-root .app-window .window-body,.wb-root .file-layout { min-height:0; overflow:auto; }
@@ -391,7 +393,7 @@
   .wb-root { height:100dvh; overflow:hidden; }
   .wb-root .desktop-icons { display:flex; flex-wrap:wrap; left:12px; right:12px; top:20px; gap:12px; }
   .wb-root .welcome-note { top:265px; max-height:calc(100dvh - 325px); overflow:auto; }
-  .wb-root .panel-status { display:none; }
+  .wb-root .panel-status,.wb-root .panel-clock { display:none; }
   .wb-root .app-window.maximized { top:0!important; left:0!important; width:100%!important; bottom:53px!important; }
 }
 

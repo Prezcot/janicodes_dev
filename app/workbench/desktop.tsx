@@ -185,8 +185,20 @@ export default function Desktop({ files, onSaveFile, folderName, onRenameFolder,
         </motion.button>)}
       </nav>
       {isLive && <span className="panel-status">TEMPORARY SESSION</span>}
+      <Clock />
     </motion.footer>
   </motion.main>;
+}
+
+// The time and the date at the right end of the taskbar, in the visitor's own format.
+function Clock() {
+  const [now, setNow] = useState(() => new Date());
+  useEffect(() => {
+    // The next change is at the start of the next minute.
+    const timer = setTimeout(() => setNow(new Date()), 60000 - (Date.now() % 60000));
+    return () => clearTimeout(timer);
+  }, [now]);
+  return <time className="panel-clock" dateTime={now.toISOString()}><strong>{now.toLocaleTimeString([], { hour: "numeric", minute: "2-digit" })}</strong>{now.toLocaleDateString([], { weekday: "short", day: "numeric", month: "short" })}</time>;
 }
 
 function WindowContent({ files, onSaveFile, folderName, win, folder, setFolder, open, note, setNote, save, saveState, saveError, isLive, fileText }: ContentProps) {
