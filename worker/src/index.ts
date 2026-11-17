@@ -1,28 +1,32 @@
 import { DurableObject } from "cloudflare:workers";
 import { MAX_ROOMS, type RoomInfo } from "../../game/net/protocol";
+import { originAllowed } from "../../game/server/origin";
 import { createRoom } from "../../game/server/room";
 import { roomName, SPLIT_LEVEL, type SavedRoom } from "../../game/sim";
 
-type Env = { ROOM: DurableObjectNamespace<GameRoom>; LOBBY: DurableObjectNamespace<Lobby> };
+type Env = { ROOM: DurableObjectNamespace<GameRoom>; LOBBY: DurableObjectNamespace<Lobby>; ALLOWED_ORIGINS: string };
 
 const TICK_MS = 1000 / 30;
 const UNUSED_ROOM_MS = 60_000; // a created room that nobody joins is removed after this
-const CORS = { "Access-Control-Allow-Origin": "*", "Access-Control-Allow-Methods": "GET, POST, OPTIONS" };
-const json = (body: unknown, status = 200) => Response.json(body, { status, headers: CORS });
+const json = (body: unknown, status = 200, headers: HeadersInit = {}) => Response.json(body, { status, headers });
 const lobbyOf = (env: Env) => env.LOBBY.get(env.LOBBY.idFromName("lobby"));
 
 const worker = {
   async fetch(request: Request, env: Env): Promise<Response> {
+    // Only the listed sites may use this server. A browser sends the page's origin with every request and socket.
+    const origin = request.headers.get("Origin");
+    if (!originAllowed(origin, env.ALLOWED_ORIGINS)) return json({ error: "origin not allowed" }, 403);
+    const cors = { "Access-Control-Allow-Origin": origin, "Access-Control-Allow-Methods": "GET, POST, OPTIONS", Vary: "Origin" };
     const { pathname } = new URL(request.url);
-    if (request.method === "OPTIONS") return new Response(null, { headers: CORS });
-    if (pathname === "/rooms" && request.method === "GET") return json(await lobbyOf(env).list());
+    if (request.method === "OPTIONS") return new Response(null, { headers: cors });
+    if (pathname === "/rooms" && request.method === "GET") return json(await lobbyOf(env).list(), 200, cors);
     if (pathname === "/rooms" && request.method === "POST") {
       const room = await lobbyOf(env).create();
-      return room ? json(room) : json({ error: "limit" }, 409);
+      return room ? json(room, 200, cors) : json({ error: "limit" }, 409, cors);
     }
     const code = pathname.match(/^\/room\/([a-z0-9]{6})\/ws$/)?.[1];
     if (code) return env.ROOM.get(env.ROOM.idFromName(code)).fetch(request);
-    return json({ error: "not found" }, 404);
+    return json({ error: "not found" }, 404, cors);
   },
 };
 export default worker;

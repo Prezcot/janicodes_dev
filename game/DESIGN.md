@@ -52,6 +52,7 @@ The single record of what the game is, what is built, and what is verified. Upda
 **Hosting and cost**
 - The site stays on Vercel. Multiplayer runs on Cloudflare Durable Objects on the Workers Free plan: one object per room, plus one for the room list.
 - The game must stay free. Durable Object classes must use SQLite storage (`new_sqlite_classes`).
+- The game server answers only pages from the sites listed in `ALLOWED_ORIGINS` in `worker/wrangler.jsonc`: the production domains. It refuses every other request and socket with 403. A page on the developer's own computer is always allowed. This stops other websites from using the server. It does not stop a script that sends a false origin.
 - Storage: live match state in room memory; end time, players, and scores in the room's SQLite storage; name, colour, settings, and a private player ID in the browser.
 
 ## Code layout
@@ -93,7 +94,7 @@ Not done:
 
 ## Verification
 
-- Automated: `pnpm test` runs 57 tests of the simulation and the room logic through their public functions.
+- Automated: `pnpm test` runs 65 tests of the simulation, the room logic, and the origin check through their public functions.
 - Live on one machine, 2026-11-17, with the Worker under `wrangler dev` and one browser player plus two scripted players:
   - Room list, create, join, and a refused colour worked. The fifth room was refused. An empty room left the list.
   - The browser player ran 6.00 m in 1 second in a room, so prediction and the server agree.
