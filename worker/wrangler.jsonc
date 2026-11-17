@@ -3,6 +3,9 @@
   "name": "paper-arena",
   "main": "src/index.ts",
   "compatibility_date": "2026-10-01",
+  // The public address of the game server. The default workers.dev address is off.
+  "routes": [{ "pattern": "arena.janicodes.dev", "custom_domain": true }],
+  "workers_dev": false,
   // The sites that may use this server, separated by commas. A star stands for one part of a host name.
   "vars": { "ALLOWED_ORIGINS": "https://www.janicodes.dev,https://janicodes.dev,https://janicodes-dev.vercel.app" },
   "durable_objects": {

@@ -47,10 +47,12 @@ The single record of what the game is, what is built, and what is verified. Upda
 - On screen: crosshair, health, ammo, kill feed, time left. Tab shows kills and deaths.
 - A name shows when your crosshair is on that player. No name tags float above heads.
 - Sounds made in the browser: shot, empty click, reload, hit, death, and other players' footsteps within about 15 metres.
-- Keys: WASD, Space, Left Shift, R, left click, Tab, and Esc for a menu with sensitivity, volume, and "Leave room".
+- Keys: WASD, Space, Left Shift, R, left click, Tab, and Esc for the game menu.
+- Settings: mouse sensitivity and volume. They are in the lobby, and in the game menu that shows when the mouse is free after play has started. The first screen of a match shows only "Click to play" and the key hints. The match does not pause while the menu is open.
 
 **Hosting and cost**
 - The site stays on Vercel. Multiplayer runs on Cloudflare Durable Objects on the Workers Free plan: one object per room, plus one for the room list.
+- The Worker is named `paper-arena`. Its public address is `https://arena.janicodes.dev`. The site reads that address from `NEXT_PUBLIC_GAME_SERVER`, which is set on Vercel for production.
 - The game must stay free. Durable Object classes must use SQLite storage (`new_sqlite_classes`).
 - The game server answers only pages from the sites listed in `ALLOWED_ORIGINS` in `worker/wrangler.jsonc`: the production domains. It refuses every other request and socket with 403. A page on the developer's own computer is always allowed. This stops other websites from using the server. It does not stop a script that sends a false origin.
 - Storage: live match state in room memory; end time, players, and scores in the room's SQLite storage; name, colour, settings, and a private player ID in the browser.
@@ -88,8 +90,6 @@ Done:
 - Client: room list, name and colour choice, prediction, other players' bodies, tracers, bullet holes, muzzle flash, hit flash, name under the crosshair, kill feed, scoreboard, "Killed by", final kill count, Esc menu with sensitivity and volume, sounds, footsteps.
 
 Not done:
-- The Worker is not deployed to Cloudflare. It needs Jani's go-ahead.
-- `NEXT_PUBLIC_GAME_SERVER` is not set on Vercel, so the live site would offer practice only.
 - Player bodies have no number plate and no walk animation.
 
 ## Verification
@@ -101,9 +101,10 @@ Not done:
   - A headshot from the browser killed a scripted player: hit flash, kill feed, and scoreboard were right.
   - Three body shots killed the browser player: health went 66, 32, 0, "Killed by" showed, and the respawn worked.
 - Colours, live on one machine, 2026-11-17, after the move to Sea glass: desktop, text editor, file manager, browser window, new file dialog, game lobby, room list, pause menu, scoreboard with four players, kill feed, and "Killed by" drew in the theme colours with no page error. A script read the colour of every text and control in nine screens and found none outside the theme.
+- Live on Cloudflare and the production site, 2026-11-17: the Worker refused requests with no origin and from another site with 403, for the room list, room creation, and the socket. From `www.janicodes.dev`, two browser players created and joined a room, each received 30 updates per second, the scoreboard listed both, and the room left the list after both left.
 - Not verified:
   - The final kill count screen in Sea glass, hover states, and narrow screens.
   - Mouse lock with a real mouse. The automated browser cannot lock the mouse, so the lock was simulated.
   - Sound. The automated browser has no audio output.
   - The final kill count screen, the reconnect after a dropped connection, and a room restart. Their logic is tested, but nobody has seen them run.
-  - Anything on Cloudflare's network, including lag between real players.
+  - Lag between real players in different places.
