@@ -9,6 +9,8 @@ export type MatchConnection = {
   onUpdate(listener: (snapshot: Snapshot, events: GameEvent[]) => void): void;
   /** The player under this player's crosshair, or null. */
   aimedAt(): string | null;
+  /** The time for a message to reach the server and come back, in milliseconds. Null when there is no server or no measurement yet. */
+  ping(): number | null;
   /** Leave the match. */
   close(): void;
 };

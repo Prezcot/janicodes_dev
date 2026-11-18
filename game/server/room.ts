@@ -54,6 +54,8 @@ export function createRoom(map: GameMap, hooks: RoomHooks, saved?: SavedRoom) {
         const inputs = message.inputs.slice(0, MAX_BATCH), seq = number(message.seq);
         inputs.forEach((raw, i) => { if (raw && typeof raw === "object") c.queue.push({ input: clean(raw), seq: seq - (inputs.length - 1 - i) }); });
         if (c.queue.length > MAX_QUEUE) c.queue.splice(0, c.queue.length - MAX_QUEUE);
+      } else if (message.t === "ping" && c.player) {
+        hooks.send(client, { t: "pong", at: number(message.at) });
       } else if (message.t === "leave" && c.player) {
         leave(match, c.player, true);
         c.player = undefined;

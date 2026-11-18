@@ -44,7 +44,7 @@ The single record of what the game is, what is built, and what is verified. Upda
 - Eight spawn points, five in the yard and three on the deck.
 
 **Screen, sound, and controls**
-- On screen: crosshair, health, ammo, kill feed, time left. Tab shows kills and deaths.
+- On screen: crosshair, health, ammo, kill feed, time left. Tab shows kills and deaths. The top right corner shows the frame rate, and in a room the ping. The kill feed is under them. The frame rate is the count of frames that the game rendered in the last second of real time. After a hidden tab or a minimized window shows again, the frame rate is blank until one new second is counted. The game does not handle a lost graphics context, and the frame rate is not correct in that state. Known limit: the screen shows a new frame rate or ping only when the game draws a frame. So after a connection drop, or after a minimized window shows again, the old value stays for one frame, about 16 ms at 60 fps. Known limit: the counters add one row above the kill feed, 18 px, or 32 px when they wrap in a narrow game. So in a small game window a kill feed with three or four rows reaches "Killed by" sooner than before. With four one-line rows, in a game narrower than about 540 px, this now happens under about 410 px of height. Before, it happened under about 355 px. Rows with long names that wrap make it happen in larger windows.
 - A name shows when your crosshair is on that player. No name tags float above heads.
 - Sounds made in the browser: shot, empty click, reload, hit, death, and other players' footsteps within about 15 metres.
 - Keys: WASD, Space, Left Shift, R, left click, Tab, and Esc for the game menu.
@@ -77,6 +77,7 @@ Decisions made while building:
 - Plain three.js, without React Three Fiber. The game is one imperative loop. React draws only the screen display.
 - Movement runs in fixed steps of 1/60 second, one step for each input. The server applies the same steps, so the client predicts its own movement exactly.
 - The client sends 3 inputs in one message, 20 messages per second. The room sends state 30 times per second.
+- Ping: each 2 seconds of play, the client sends a `ping` message with its own clock time, and the room sends the time back in a `pong` message. The ping on screen is the time between the two. This adds 1 message to each 40 that a player sends. A hidden tab or a minimized game window sends no ping. An older room ignores `ping`, and the client then shows only the frame rate. The ping includes the time that the browser waits before it reads the answer. A browser that is busy with drawing reads it late, so the ping then reads too high. The ping is unknown again when the connection drops.
 - Other players are shown 0.1 seconds in the past. For a shot, the server moves them back to where the shooter saw them, by at most 0.4 seconds.
 - A deliberate "Leave room" frees the slot at once. A dropped connection holds the slot and colour for 20 seconds.
 
@@ -99,7 +100,7 @@ Not done:
 
 ## Verification
 
-- Automated: `pnpm test` runs 71 tests of the simulation, the room logic, and the origin check through their public functions.
+- Automated: `pnpm test` runs 73 tests of the simulation, the room logic, the room connection, and the origin check through their public functions.
 - Live on one machine, 2026-11-17, with the Worker under `wrangler dev` and one browser player plus two scripted players:
   - Room list, create, join, and a refused colour worked. The fifth room was refused. An empty room left the list.
   - The browser player ran 6.00 m in 1 second in a room, so prediction and the server agree.
@@ -109,6 +110,7 @@ Not done:
 - Live on Cloudflare and the production site, 2026-11-17: the Worker refused requests with no origin and from another site with 403, for the room list, room creation, and the socket. From `www.janicodes.dev`, two browser players created and joined a room, each received 30 updates per second, the scoreboard listed both, and the room left the list after both left.
 - Lobby and site icon, live on one machine, 2026-11-17, in a browser with no window: the lobby drew with no page error, the figure changed colour with the swatch, and 40 pictures over 9 seconds showed the hop and spin, the crouch dance, and the wobble. The page served the three icon links, and each one loaded.
 - Pistol looks, live on one machine, 2026-11-18, with the Worker under `wrangler dev`, in a browser with no window: the pistol menu opened, the arrow keys and a click changed the look, Esc closed the menu and left the game window open, and the choice was saved. Each of the seven looks drew on the pistol in a practice match with no page error. In a room with one browser player and two scripted players, each player received the others' looks, and a scripted player that sent no look got "Ink steel".
+- Frame rate and ping, live on one machine, 2026-11-18, with the Worker under `wrangler dev`, in a browser with no window: in a room, the corner showed "60 fps" and "1 ms", and the browser sent 3 pings and got 3 answers in 5 seconds. A scripted player measured 1.4 to 3.4 ms for the same round trip. With drawing in software, the same room showed "16 ms". In practice the corner showed only "60 fps". With the frame callback slowed by a script, one frame each 200 ms read "5 fps", each 1200 ms "1 fps", and each 2500 ms "0 fps". After a minimize and restore, the frame rate was blank and then read "60 fps". In a game 298 px wide the counters wrapped and stayed 7 px clear of the timer. The place of the kill feed under the counters was checked with sample rows put into the page, not with real kills. Not checked: a second player, and a real change of tab.
 - Not verified:
   - The fall flat gag, the lobby in a narrow window, and the site icon in a real browser tab and on a phone.
   - Another player's pistol look as drawn on their figure in a match. The room sends the right look to every player, and the lobby figure draws it, but nobody has looked at it in a match.

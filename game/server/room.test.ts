@@ -125,4 +125,14 @@ describe("a room", () => {
     const skins = Object.fromEntries(snap("c1").snap.players.map((view) => [view.id, view.skin]));
     expect(skins).toEqual({ c1: 4, c2: 0, c3: 0, c4: 0 });
   });
+
+  it("answers a ping from a player at once, with the same time", () => {
+    const { room, sent, enter, last } = setup();
+    enter("c1", 0);
+    room.receive("c1", { t: "ping", at: 1234.5 });
+    expect(last("c1")).toEqual({ t: "pong", at: 1234.5 });
+    room.connect("c2"); // connected, but not a player
+    room.receive("c2", { t: "ping", at: 1 });
+    expect(sent.c2).toBeUndefined();
+  });
 });

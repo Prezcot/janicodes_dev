@@ -24,6 +24,10 @@ export type Hud = {
   /** Counts hits on other players, so the crosshair can flash again for each one. */
   hits: number;
   headHit: boolean;
+  /** Frames drawn per second, measured over the last second. Null until one second is counted. */
+  fps: number | null;
+  /** Milliseconds to the server and back. Null in practice, and before the first measurement. */
+  ping: number | null;
 };
 export type Options = { sensitivity: number; volume: number };
 
@@ -73,12 +77,12 @@ export function startGame(canvas: HTMLCanvasElement, map: GameMap, conn: MatchCo
   let fire = false, fireTap = false, locked = false, yaw = 0, pitch = 0;
   let latest: Snapshot | null = null, me: PlayerView | undefined;
   const before = new THREE.Vector3(), after = new THREE.Vector3(), forward = new THREE.Vector3(0, 0, 1);
-  let eye = TUNING.standHeight - TUNING.eyeBelowTop, kick = 0, reloadDip = 0, clock = 0, shownHud = "";
+  let eye = TUNING.standHeight - TUNING.eyeBelowTop, kick = 0, reloadDip = 0, clock = 0, shownHud = "", frames = 0, framesAt = 0, fps: number | null = null;
   let feed: (Hud["feed"][number] & { until: number })[] = [], feedKey = 0, hits = 0, headHit = false, killedBy = "";
 
   const nameOf = (id: string) => latest?.players.find((p) => p.id === id)?.name ?? "?";
   const pushHud = () => {
-    const aimed = me?.alive && locked ? conn.aimedAt() : null;
+    const aimed = me?.alive && locked ? conn.aimedAt() : null, ping = conn.ping();
     const hud: Hud = {
       locked, alive: me?.alive ?? true, health: Math.ceil(me?.health ?? TUNING.maxHealth), ammo: me?.ammo ?? TUNING.magSize,
       reloading: me?.reloading ?? false, secondsLeft: latest ? Math.max(0, Math.ceil(latest.endsAt - latest.time)) : 0,
@@ -86,6 +90,7 @@ export function startGame(canvas: HTMLCanvasElement, map: GameMap, conn: MatchCo
       scores: (latest?.players ?? []).map(({ id, name, colour, kills, deaths, left }) => ({ id, name, colour, kills, deaths, left })),
       aim: aimed ? nameOf(aimed) : "", killedBy: me?.alive ? "" : killedBy,
       feed: feed.map(({ key, killer, target, head }) => ({ key, killer, target, head })), hits, headHit,
+      fps, ping: ping === null ? null : Math.round(ping),
     };
     const key = JSON.stringify(hud);
     if (key !== shownHud) { shownHud = key; onHud(hud); }
@@ -174,6 +179,9 @@ export function startGame(canvas: HTMLCanvasElement, map: GameMap, conn: MatchCo
     if (!locked) { keys.clear(); taps.clear(); fire = fireTap = false; }
     pushHud();
   };
+  // A hidden tab or a minimized window is not a slow frame. The frame rate is blank until one new second is counted.
+  const restartRate = () => { framesAt = 0; fps = null; };
+  document.addEventListener("visibilitychange", restartRate);
   canvas.addEventListener("mousedown", onMouseDown);
   document.addEventListener("mouseup", onMouseUp);
   document.addEventListener("mousemove", onMouseMove);
@@ -234,7 +242,7 @@ export function startGame(canvas: HTMLCanvasElement, map: GameMap, conn: MatchCo
     raf = requestAnimationFrame(frame);
     const dt = Math.min(0.1, (now - last) / 1000);
     last = now;
-    if (document.hidden || canvas.closest("[data-minimized]")) return;
+    if (document.hidden || canvas.closest("[data-minimized]")) { restartRate(); return; }
     resize();
     clock += dt;
     pending += dt;
@@ -266,6 +274,10 @@ export function startGame(canvas: HTMLCanvasElement, map: GameMap, conn: MatchCo
     renderer.render(scene, camera);
     renderer.clearDepth();
     renderer.render(viewScene, viewCamera);
+
+    if (!framesAt) { framesAt = now; frames = 0; return; }
+    frames++;
+    if (now - framesAt >= 1000) { fps = Math.round(frames * 1000 / (now - framesAt)); frames = 0; framesAt = now; }
   };
   raf = requestAnimationFrame(frame);
 
@@ -275,6 +287,7 @@ export function startGame(canvas: HTMLCanvasElement, map: GameMap, conn: MatchCo
     /** Stop the game and free its resources. */
     stop() {
       cancelAnimationFrame(raf);
+      document.removeEventListener("visibilitychange", restartRate);
       canvas.removeEventListener("mousedown", onMouseDown);
       document.removeEventListener("mouseup", onMouseUp);
       document.removeEventListener("mousemove", onMouseMove);

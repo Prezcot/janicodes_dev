@@ -19,6 +19,7 @@ export function connectLocal(map: GameMap, who: { id: string; name: string; colo
     // The first update gives the client its spawn position and direction before it sends any input.
     onUpdate(next) { listener = next; next(snapshot(match), []); },
     aimedAt: () => aimedAt(match, who.id),
+    ping: () => null,
     close() {},
   };
 }

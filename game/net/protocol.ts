@@ -4,11 +4,14 @@ export type ClientMessage =
   | { t: "join"; id: string; name: string; colour: number; skin?: number }
   /** A batch of inputs, one for each fixed step. `seq` numbers the last one. */
   | { t: "in"; seq: number; inputs: PlayerInput[] }
+  /** `at` is the client's own clock. The room sends it back, and the client measures the round trip. */
+  | { t: "ping"; at: number }
   | { t: "leave" };
 
 export type ServerMessage =
   | { t: "joined"; id: string }
   | { t: "refused"; reason: Extract<JoinResult, { ok: false }>["reason"] | "no-room" }
+  | { t: "pong"; at: number }
   /** `ack` is the last input the room applied for this client. `me` is that client's own state after it. */
   | { t: "snap"; snap: Snapshot; events: GameEvent[]; ack: number; me?: PrivateState };
 

@@ -8,6 +8,7 @@ export type CloseReason = Extract<ServerMessage, { t: "refused" }>["reason"] | "
 
 const INTERPOLATION = 0.1; // other players are shown this many seconds in the past, between two server updates
 const RETRY_MS = 2000, RETRY_FOR_MS = 20_000; // matches the room's reconnect grace
+const PING_STEPS = 120; // one ping each 2 seconds of play
 const lerp = (a: number, b: number, k: number) => a + (b - a) * k;
 const turn = (a: number, b: number, k: number) => a + Math.atan2(Math.sin(b - a), Math.cos(b - a)) * k;
 
@@ -22,7 +23,7 @@ export function connectRoom(options: { url: string; map: GameMap; id: string; na
   let ws: WebSocket, joined = false, done = false, lostAt = 0;
   let seq = 0, pending: { seq: number; input: PlayerInput }[] = [], outbox: PlayerInput[] = [];
   const updates: { at: number; snap: Snapshot }[] = [];
-  let fromServer: GameEvent[] = [], clockOffset: number | null = null;
+  let fromServer: GameEvent[] = [], clockOffset: number | null = null, ping: number | null = null;
   // After a spawn, the server chooses which way the player faces. Inputs made before that are stale.
   let spawned = false;
 
@@ -36,6 +37,7 @@ export function connectRoom(options: { url: string; map: GameMap; id: string; na
       joined = true; lostAt = 0; spawned = true;
       return;
     }
+    if (message.t === "pong") { ping = performance.now() - message.at; return; }
     const now = performance.now() / 1000, offset = message.snap.time - now;
     clockOffset = clockOffset === null ? offset : lerp(clockOffset, offset, 0.1);
     updates.push({ at: now, snap: message.snap });
@@ -61,7 +63,7 @@ export function connectRoom(options: { url: string; map: GameMap; id: string; na
       if (latest?.ended) { finish("over"); return; }
       if (!joined && !lostAt) { finish("no-room"); return; } // the room never accepted this connection
       // The connection dropped. Try again while the room still holds this player's slot.
-      joined = false; pending = []; outbox = [];
+      joined = false; pending = []; outbox = []; ping = null;
       lostAt ||= Date.now();
       if (Date.now() - lostAt > RETRY_FOR_MS) finish("lost"); else setTimeout(() => { if (!done) open(); }, RETRY_MS);
     };
@@ -100,6 +102,7 @@ export function connectRoom(options: { url: string; map: GameMap; id: string; na
         pending.push({ seq: ++seq, input: step });
         outbox.push(step);
         if (outbox.length >= BATCH) { send({ t: "in", seq, inputs: outbox }); outbox = []; }
+        if (seq % PING_STEPS === 1) send({ t: "ping", at: performance.now() });
       }
       // Show this player's own shots at once. Whether they hit a player comes from the server.
       const local = drainEvents(replica).flatMap((e): GameEvent[] =>
@@ -115,6 +118,7 @@ export function connectRoom(options: { url: string; map: GameMap; id: string; na
     },
     onUpdate(next) { listener = next; },
     aimedAt: () => aimedAt(replica, id),
+    ping: () => ping,
     close() {
       if (done) return;
       done = true;

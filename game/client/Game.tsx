@@ -162,7 +162,7 @@ function Lobby({ notice, options, onOptions, onPlay }: { notice: string; options
   </div>;
 }
 
-const START: Hud = { locked: false, alive: true, health: TUNING.maxHealth, ammo: TUNING.magSize, reloading: false, secondsLeft: 0, ended: false, showScores: false, scores: [], aim: "", killedBy: "", feed: [], hits: 0, headHit: false };
+const START: Hud = { locked: false, alive: true, health: TUNING.maxHealth, ammo: TUNING.magSize, reloading: false, secondsLeft: 0, ended: false, showScores: false, scores: [], aim: "", killedBy: "", feed: [], hits: 0, headHit: false, fps: null, ping: null };
 const ranked = (scores: Score[]) => [...scores].sort((a, b) => b.kills - a.kills || a.deaths - b.deaths);
 
 function Arena({ play, options, onOptions, onExit }: { play: Play; options: Options; onOptions: (next: Options) => void; onExit: (reason: CloseReason) => void }) {
@@ -200,7 +200,7 @@ function Arena({ play, options, onOptions, onExit }: { play: Play; options: Opti
     {hud.locked && <div key={hud.hits} className={`fps-crosshair ${hud.hits ? (hud.headHit ? "head" : "hit") : ""}`} aria-hidden="true" />}
     {hud.locked && hud.aim && <div className="fps-aim">{hud.aim}</div>}
     <div className="fps-top">{clock(hud.secondsLeft)}</div>
-    <div className="fps-feed">{hud.feed.map(f => <div key={f.key}><b>{f.killer}</b> {f.head ? "headshot" : "shot"} <b>{f.target}</b></div>)}</div>
+    <div className="fps-feed"><p className="fps-net">{hud.fps !== null && <span>{hud.fps} fps</span>}{hud.ping !== null && <span>{hud.ping} ms</span>}</p>{hud.feed.map(f => <div key={f.key}><b>{f.killer}</b> {f.head ? "headshot" : "shot"} <b>{f.target}</b></div>)}</div>
     <div className="fps-stat fps-health"><small>Health</small>{hud.alive ? hud.health : 0}</div>
     <div className="fps-stat fps-ammo"><small>{hud.reloading ? "Reloading" : "Ammo"}</small>{hud.ammo} / {TUNING.magSize}</div>
     {hud.locked && !hud.alive && !hud.ended && hud.killedBy && <div className="fps-killed">Killed by <b>{hud.killedBy}</b></div>}

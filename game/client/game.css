@@ -21,6 +21,8 @@
 .fps-killed b, .fps-feed b, .fps-death b { color: var(--accent-strong); }
 .fps-death { font-size: 14px; margin-bottom: 8px; }
 .fps-feed { top: 10px; right: 12px; display: grid; gap: 4px; justify-items: end; }
+/* The frame rate and the ping are the first row of the feed. In a narrow game they wrap before they reach the timer. */
+.fps-net { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 0 12px; max-width: calc(50cqw - 50px); margin: 0; font-size: 12px; text-shadow: 0 0 3px var(--surface), 0 0 3px var(--surface); }
 .fps-feed div { padding: 3px 8px; }
 .fps-stat { bottom: 12px; padding: 6px 12px; font-size: 20px; font-weight: 700; min-width: 86px; }
 .fps-stat small { display: block; font-size: 12px; font-weight: 400; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
