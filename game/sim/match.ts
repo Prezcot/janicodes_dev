@@ -5,7 +5,7 @@ import type { GameEvent, GameMap, JoinResult, Match, Player, PlayerInput, Privat
 const clamp = (v: number, a: number, b: number) => Math.min(b, Math.max(a, v));
 // The half step of gravity makes the fixed-step jump peak at jumpHeight.
 const JUMP_SPEED = Math.sqrt(2 * T.gravity * T.jumpHeight) + (T.gravity * STEP) / 2;
-export const heightOf = (p: { crouched: boolean }) => (p.crouched ? T.crouchHeight : T.standHeight);
+const heightOf = (p: { crouched: boolean }) => (p.crouched ? T.crouchHeight : T.standHeight);
 
 export function createMatch(map: GameMap): Match {
   return { map, time: 0, endsAt: Infinity, ended: false, players: new Map(), events: [], joins: 0 };
@@ -134,7 +134,7 @@ export function applyInput(match: Match, id: string, input: PlayerInput): void {
   p.fireHeld = input.fire;
 }
 
-export const eyeOf = (p: { pos: Vec3; crouched: boolean }): Vec3 => [p.pos[0], p.pos[1] + heightOf(p) - T.eyeBelowTop, p.pos[2]];
+const eyeOf = (p: { pos: Vec3; crouched: boolean }): Vec3 => [p.pos[0], p.pos[1] + heightOf(p) - T.eyeBelowTop, p.pos[2]];
 
 const REWIND_LIMIT = 0.4, TRAIL_SECONDS = 0.5;
 

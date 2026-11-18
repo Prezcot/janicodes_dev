@@ -21,13 +21,14 @@ Open http://127.0.0.1:3000. The desktop opens at once and saves your workspace i
 - Desktop context menus, folder renaming and new text files with automatic saving.
 - Editable notes with explicit Save, plus text-file downloads.
 - Browser-style search launcher that opens DuckDuckGo in a real tab.
+- A taskbar clock with the time and the date. Esc closes the active window, except from a text field or from inside the game.
 - IndexedDB persistence for notes, folder names and created text files, up to 100 MB; returning visitors resume their desktop.
 - A temporary session when the browser cannot save, and mobile layouts.
 - Paper Arena, a multiplayer pistol game. See `game/DESIGN.md`.
 
 The 100 MB limit caps the UTF-8 serialized workspace data saved by this app. It does not reserve disk space or set the browser's quota, and does not include downloaded application assets. Storage is used only for actual workspace data. Browser storage can be cleared or evicted. A temporary session does not persist edits. Unsaved notes remain available while switching windows; save them before leaving the desktop.
 
-The portfolio text is in the `docs` table in `app/workbench/desktop.tsx`. Window positions are session-only. General websites open externally; this is not an embedded Firefox engine.
+The portfolio text is in the `docs` table in `app/workbench/desktop.tsx`. The one exception is the text of the start-here window, which is in `WindowContent` in the same file. Window positions are session-only. General websites open externally; this is not an embedded Firefox engine.
 
 ## Structure
 
@@ -44,5 +45,11 @@ pnpm typecheck
 pnpm lint
 pnpm build
 ```
+
+`pnpm lint` runs three checks:
+
+- ESLint. It also refuses a colour value outside `theme/theme.ts`, in code and in the style files.
+- knip, which finds unused files, exports, and dependencies.
+- jscpd, which finds copied blocks. `.jscpd-baseline.json` lists the 4 copies that exist now, and a new copy fails the check. After you remove a copy, run `pnpm exec jscpd --update-baseline`.
 
 Verified in Chromium: note persistence after reload (including empty notes), file navigation, search URL generation, window dragging/minimize/restore/maximize, and 390px layout. Storage validation and multibyte UTF-8 budget rejection were checked with Node's assertions against compiled storage code. Search launch was intercepted during testing; external results were not inspected.

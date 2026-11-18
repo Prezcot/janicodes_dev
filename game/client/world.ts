@@ -6,7 +6,7 @@ import { gripFaces, pistolLook, slideFaces } from "./skins";
 const C = theme.game;
 const TILE = 2; // metres covered by one texture tile
 
-export function canvasTexture(size: number, draw: (g: CanvasRenderingContext2D, s: number) => void) {
+function canvasTexture(size: number, draw: (g: CanvasRenderingContext2D, s: number) => void) {
   const canvas = document.createElement("canvas");
   canvas.width = canvas.height = size;
   draw(canvas.getContext("2d")!, size);

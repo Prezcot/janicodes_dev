@@ -11,17 +11,17 @@ The single record of what the game is, what is built, and what is verified. Upda
 - Colours: the "Sea glass" theme, picked by Jani on 2026-11-17. Cream paper, an aqua desk, deep teal ink, coral accents, and sand. The desktop and the game share it.
 
 **Rooms**
-- The room list shows each room's random two-word name, player count out of 8, and time left.
-- A player can join any open room or create one. At most 4 rooms exist at once.
+- The room list shows each room's random two-word name, player count out of 8, and time left. The lobby calculates the time left from the room's end time and the clock of the visitor's computer. If that clock is wrong, the time left is wrong, and the lobby can show "Ending" too early or too late. The room itself decides if a join is allowed.
+- A player can join any open room or create one. At most 4 rooms exist at once. A created room that nobody joins leaves the list after 60 seconds.
 - Join screen: a name and a free colour. The browser remembers both.
-- Names: at most 16 characters, no word filter, a random funny name if left empty, a number added to a duplicate.
+- Names: at most 16 characters, no word filter, a random funny name if left empty, a number added to a duplicate. The number comes after the 16 characters, so a duplicate name can be 18 characters or more.
 - A room lives 30 minutes from the first join. The timer also runs for a player who is alone.
 - Alone, a player can roam and shoot.
-- A late joiner spawns at once with 0 kills. Nobody can join in the last 2 minutes.
+- A late joiner spawns at once with 0 kills. Nobody can join in the last 2 minutes. This includes a dropped player who tries to return.
 - At 0:00 play stops and the final kill count shows for 15 seconds. Players who left are listed and marked "left". Most kills wins, and fewer deaths breaks a tie. Then everyone returns to the room list.
 - A room closes at once when its last player leaves.
-- A player with no input for 2 minutes is removed.
-- A dropped player has 20 seconds to reconnect and keep score, colour, and name. A player who returns later continues their old score line.
+- A player with no input for 2 minutes is removed. Known limit: the browser of the removed player treats this as a dropped connection and joins again after 2 seconds. So an idle player with an open tab keeps the slot, and the room removes them again each 2 minutes.
+- A dropped player has 20 seconds to reconnect and keep score, colour, and name. In the last 2 minutes of a room, a dropped player cannot return. A player who returns later continues their old score line.
 - There is no chat.
 
 **Combat**
@@ -31,7 +31,7 @@ The single record of what the game is, what is built, and what is verified. Upda
 - After 5 seconds without damage, health returns at 20 per second.
 - On death the body folds flat and fades in 2 seconds, and the dead player sees "Killed by" and the name.
 - Respawn takes 2 seconds, at the spawn point farthest from other players, with 1.5 seconds of protection that ends early if you fire.
-- Effects: muzzle flash, tracer, a bullet hole that everyone sees for 20 seconds, and a crosshair flash for a hit and for a headshot.
+- Effects: muzzle flash, tracer, a bullet hole that everyone sees for 20 seconds, and a crosshair flash for a hit and for a headshot. At most 64 holes show at once, and hole 65 replaces the oldest one.
 
 **Movement**
 - Run at 6 metres per second. No sprint, slight air steering, no bunny hopping, no fall damage.
@@ -48,7 +48,7 @@ The single record of what the game is, what is built, and what is verified. Upda
 - A name shows when your crosshair is on that player. No name tags float above heads.
 - Sounds made in the browser: shot, empty click, reload, hit, death, and other players' footsteps within about 15 metres.
 - Keys: WASD, Space, Left Shift, R, left click, Tab, and Esc for the game menu.
-- Settings: mouse sensitivity and volume. They are in the lobby, and in the game menu that shows when the mouse is free after play has started. The first screen of a match shows only "Click to play" and the key hints. The match does not pause while the menu is open.
+- Settings: mouse sensitivity and volume. They are in the lobby, and in the game menu that shows when the mouse is free after play has started. The first screen of a match shows "Click to play", the key hints, the "Full screen" button, and the "Leave room" or "Leave practice" button. The settings and "Resume" show only after play has started. The match does not pause while the menu is open.
 - Lobby: "Your player" on the left, with a preview of the paper figure in the chosen colour, the name, the colour, and the settings. Rooms and the key hints are on the right. In a narrow window the lobby is one column. The figure sways, and at random times it hops and spins, dances in a crouch, falls flat, or wobbles. A new colour arrives with a hop and a spin. The figure stays still when the system asks for reduced motion.
 - Keyboard in the lobby: the arrow keys change the colour. The game shows a focus ring while the mouse is free. No label in the game is smaller than 12 pixels.
 - Pistol looks: seven looks for the pistol, chosen in the pistol menu that opens from "Change pistol" in the lobby. "Ink steel" is the default. The others are "Hatched steel", "Paper cutout", "Blueprint", "Sand card", "Player colour", and "Flat grey". Every player in a room sees every other player's look. The choice is saved in the browser. The pistol keeps its shape of two boxes: each look is drawn in code onto the faces, so the site loads no image files for it.
@@ -58,8 +58,8 @@ The single record of what the game is, what is built, and what is verified. Upda
 - The site stays on Vercel. Multiplayer runs on Cloudflare Durable Objects on the Workers Free plan: one object per room, plus one for the room list.
 - The Worker is named `paper-arena`. Its public address is `https://arena.janicodes.dev`. The site reads that address from `NEXT_PUBLIC_GAME_SERVER`, which is set on Vercel for production.
 - The game must stay free. Durable Object classes must use SQLite storage (`new_sqlite_classes`).
-- The game server answers only pages from the sites listed in `ALLOWED_ORIGINS` in `worker/wrangler.jsonc`: the production domains. It refuses every other request and socket with 403. A page on the developer's own computer is always allowed. This stops other websites from using the server. It does not stop a script that sends a false origin.
-- Storage: live match state in room memory; end time, players, and scores in the room's SQLite storage; name, colour, settings, and a private player ID in the browser.
+- The game server answers only pages from the sites listed in `ALLOWED_ORIGINS` in `worker/wrangler.jsonc`: the production domains. It refuses every other request and socket with 403. An entry can have a star, which stands for one part of a host name. No entry has a star now. A page on the developer's own computer is always allowed. This stops other websites from using the server. It does not stop a script that sends a false origin.
+- Storage: live match state in room memory; end time, players, and scores in the room's SQLite storage; name, colour, settings, and a player ID in the browser. Known limit: the room sends the ID of each player to all players in the room, so the ID is not secret. A player in a room can use the ID of another player to take that player's place.
 
 ## Code layout
 
@@ -70,7 +70,7 @@ The single record of what the game is, what is built, and what is verified. Upda
 - `game/client/`: the three.js view, input, sound, room list, and screen display. `FigurePreview.tsx` draws the lobby figure with its own small renderer. `skins.ts` draws the pistol looks, and `PistolMenu.tsx` is the pistol menu. The colours and names of the looks are in `theme/theme.ts`, and `TUNING.skins` is how many the room accepts.
 - `app/favicon.ico`, `app/icon.png`, `app/apple-icon.png`: the site icon, a paper pointer. The source drawing is `mockups/icons/pointer.svg`. The phone icon has a cream background.
 - `app/workbench/`: the game is the `game` window kind.
-- `theme/theme.ts`: the colour system. Every colour of the desktop and the game is defined there, with the eight player colours and their names. `app/layout.tsx` turns the desktop colours into CSS variables. The style files use only those variables.
+- `theme/theme.ts`: the colour system. Every colour of the desktop and the game is defined there, with the eight player colours and their names. `app/layout.tsx` turns the desktop colours into CSS variables. The style files use only those variables. The one exception is `#000` in the mask of the crosshair in `game/client/game.css`. A mask shows no colour. `pnpm lint` refuses any other colour value outside `theme/theme.ts`, in code and in the style files.
 
 Decisions made while building:
 - No physics library. The map is only boxes and ramps, so `game/sim/collide.ts` does collision and ray tests. The Worker is 29 KiB. With the physics library it was 3.6 MB.
@@ -111,6 +111,7 @@ Not done:
 - Lobby and site icon, live on one machine, 2026-11-17, in a browser with no window: the lobby drew with no page error, the figure changed colour with the swatch, and 40 pictures over 9 seconds showed the hop and spin, the crouch dance, and the wobble. The page served the three icon links, and each one loaded.
 - Pistol looks, live on one machine, 2026-11-18, with the Worker under `wrangler dev`, in a browser with no window: the pistol menu opened, the arrow keys and a click changed the look, Esc closed the menu and left the game window open, and the choice was saved. Each of the seven looks drew on the pistol in a practice match with no page error. In a room with one browser player and two scripted players, each player received the others' looks, and a scripted player that sent no look got "Ink steel".
 - Frame rate and ping, live on one machine, 2026-11-18, with the Worker under `wrangler dev`, in a browser with no window: in a room, the corner showed "60 fps" and "1 ms", and the browser sent 3 pings and got 3 answers in 5 seconds. A scripted player measured 1.4 to 3.4 ms for the same round trip. With drawing in software, the same room showed "16 ms". In practice the corner showed only "60 fps". With the frame callback slowed by a script, one frame each 200 ms read "5 fps", each 1200 ms "1 fps", and each 2500 ms "0 fps". After a minimize and restore, the frame rate was blank and then read "60 fps". In a game 298 px wide the counters wrapped and stayed 7 px clear of the timer. The place of the kill feed under the counters was checked with sample rows put into the page, not with real kills. Not checked: a second player, and a real change of tab.
+- Review of the whole repository at `05b2718`, 2026-11-19: the review compared this record and `README.md` with the code. Where they did not agree, the record was changed to describe the code. No behaviour was changed. Each corrected line was read against the code. The same change added three checks to `pnpm lint` and removed the word `export` from 4 values that only their own file uses. The idle player who joins again was also seen in a scratch test by the reviewer.
 - Not verified:
   - The fall flat gag, the lobby in a narrow window, and the site icon in a real browser tab and on a phone.
   - Another player's pistol look as drawn on their figure in a match. The room sends the right look to every player, and the lobby figure draws it, but nobody has looked at it in a match.

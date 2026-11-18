@@ -4,7 +4,7 @@ import type { GameMap, Solid, Vec3 } from "./types";
 const clamp = (v: number, a: number, b: number) => Math.min(b, Math.max(a, v));
 
 /** Height of a solid's top surface at a point inside its footprint. */
-export function topAt(s: Solid, x: number, z: number): number {
+function topAt(s: Solid, x: number, z: number): number {
   if (!s.ramp) return s.max[1];
   const a = s.ramp.axis;
   let t = clamp(((a === 0 ? x : z) - s.min[a]) / (s.max[a] - s.min[a]), 0, 1);

@@ -4,6 +4,7 @@
 .fps-canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block; cursor: pointer; }
 .fps-crosshair { position: absolute; left: 50%; top: 50%; width: 18px; height: 18px; margin: -9px 0 0 -9px; pointer-events: none; color: var(--ink);
   background: linear-gradient(currentColor, currentColor) center / 2px 100% no-repeat, linear-gradient(currentColor, currentColor) center / 100% 2px no-repeat;
+  /* eslint-disable-next-line no-restricted-syntax -- a mask shows no colour */
   -webkit-mask: radial-gradient(circle, transparent 3px, #000 3.5px); mask: radial-gradient(circle, transparent 3px, #000 3.5px); }
 .fps-crosshair.hit { animation: fps-hit .18s ease-out; }
 .fps-crosshair.head { animation: fps-head .28s ease-out; }

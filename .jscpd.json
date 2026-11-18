@@ -1,0 +1,8 @@
+{
+  "path": ["app", "game", "theme", "worker/src"],
+  "format": ["typescript", "tsx", "css"],
+  "ignore": ["**/*.test.ts"],
+  "reporters": ["console"],
+  "baseline": ".jscpd-baseline.json",
+  "failOnNewClones": 0
+}

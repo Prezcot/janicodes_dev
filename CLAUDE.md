@@ -1,1 +1,4 @@
-- Make sure to keep files under 500 lines. Ideally under 300 lines.
+- Keep files under 500 lines, ideally under 300. Keep lines under 160 characters, with one statement or one JSX element per line.
+- The spec is `game/DESIGN.md` for the game and `README.md` for the desktop. Read the matching part before a change. Update it in the same commit, so it always describes what the code does. Mark a limit you accept as "Known limit".
+- Game numbers have one home, `game/sim/tuning.ts`. Other files import them.
+- `.jscpd-baseline.json` only gets shorter. Remove a copy and update the baseline; do not add to it.
